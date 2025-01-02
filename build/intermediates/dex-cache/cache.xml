@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="false"
+        jar="C:\Users\Shlomi\.android\build-cache\b927af67d7414810f50e1a188550fff96172ba3e\output\jars\classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="26.0.1"
+        sha1="b12cd9c87c3dfb012a911b6e38d2444ed0a65e1f">
+        <dex dex="C:\Users\Shlomi\AndroidStudioProjects\RememberList\app\build\intermediates\pre-dexed\debug\classes_39f598f11b44fe8274c54a67b2c2dbc3c156983b.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Users\Shlomi\.android\build-cache\2fda23db4d243f89d86c45055d5321cb51ee9fc5\output\jars\classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="26.0.1"
+        sha1="58b12bdb21a84f22e0dc3b047aeceb0a546b1b44">
+        <dex dex="C:\Users\Shlomi\AndroidStudioProjects\RememberList\app\build\intermediates\pre-dexed\debug\classes_e0d4d990cd8114ddde309812f59237a851b71bca.jar" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Shlomi\AndroidStudioProjects\RememberList\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="26.0.1"
+        sha1="060db74e2e73320b5d240cb75dc187e72716185c">
+        <dex dex="C:\Users\Shlomi\AndroidStudioProjects\RememberList\app\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run-bootstrap_958d8ac75b083c44306a5712609d1b3955daf4c0\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Shlomi\AndroidStudioProjects\RememberList\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="26.0.1"
+        sha1="3be78ebc2706b2e1fe2f12d5726887a92d6c183b">
+        <dex dex="C:\Users\Shlomi\AndroidStudioProjects\RememberList\app\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run_507744748c2f498a6728eff88af78838ee9dd309\classes.dex" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Users\Shlomi\.android\build-cache\dff35f6e65b10412d6588e33a31e6fc94f883f26\output\jars\classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="26.0.1"
+        sha1="a37fc31c5ceeaa4532a37358add1b189d8db4af1">
+        <dex dex="C:\Users\Shlomi\AndroidStudioProjects\RememberList\app\build\intermediates\pre-dexed\debug\classes_ed249d5c8892bbfc7d21729517f0bb913d1c0525.jar" />
+    </item>
+
+</items>

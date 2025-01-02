@@ -1,0 +1,53 @@
+plugins {
+    id 'com.android.application'
+    id 'com.google.gms.google-services' // Apply Google Services Plugin (required for Firebase)
+}
+
+android {
+    compileSdk 33 // Define the SDK version used to compile the app
+
+    defaultConfig {
+        applicationId "com.example.shlomi.rememberlist" // Unique identifier for your app
+        minSdk 21 // Minimum supported Android version
+        targetSdk 33 // Targeted Android version
+        versionCode 1 // Internal version code for the app
+        versionName "1.0" // Human-readable version name
+        namespace "com.example.shlomi.rememberlist" // Define the app's namespace
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false // Disable code shrinking and obfuscation for release builds
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    google() // Google's Maven repository for Android libraries
+    mavenCentral() // Central repository for Java and Android dependencies
+}
+
+dependencies {
+    // Core Android libraries
+    implementation 'androidx.core:core:1.9.0' // Core support library
+    implementation 'androidx.core:core-ktx:1.9.0' // Kotlin extensions for core library
+    implementation 'androidx.appcompat:appcompat:1.6.1' // Support for backward compatibility
+    implementation 'com.google.android.material:material:1.9.0' // Material Design components
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4' // Layout library
+
+    // Testing libraries
+    testImplementation 'junit:junit:4.13.2' // Unit testing framework
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5' // Android testing support for JUnit
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1' // UI testing library
+
+    // Firebase BoM (Bill of Materials) - Ensures compatible versions for all Firebase libraries
+    implementation platform('com.google.firebase:firebase-bom:32.3.0')
+
+    // Firebase services
+    implementation 'com.google.firebase:firebase-analytics' // Firebase Analytics for tracking
+    implementation 'com.google.firebase:firebase-auth:21.3.0' // Firebase Authentication
+    implementation 'com.google.android.gms:play-services-auth:20.7.0' // Google Sign-In integration
+    implementation 'com.google.firebase:firebase-database' // Firebase Realtime Database
+    implementation 'com.google.firebase:firebase-storage' // Firebase Storage for file uploads
+}
