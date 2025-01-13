@@ -73,7 +73,7 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
     {
         if (view.getId() == R.id.back)
         {
-            Intent intent = new Intent(this, MyListsActivity.class);
+            Intent intent = new Intent(this, SharedListsActivity.class);
             startActivity(intent);
         }
     }
