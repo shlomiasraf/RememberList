@@ -1,9 +1,12 @@
 package RememberList.Codes;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,7 +14,9 @@ import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
 
-public class SharedListsProductsActivity extends AppCompatActivity {
+public class SharedListsProductsActivity extends AppCompatActivity implements View.OnClickListener
+{
+
 
     private SharedListsProductsViewModel viewModel; // ViewModel instance
     private ListView contentListView; // ListView for displaying content
@@ -22,7 +27,7 @@ public class SharedListsProductsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main5);
+        setContentView(R.layout.activity_sharedlistsproducts);
 
         // Initialize UI components
         contentListView = findViewById(R.id.contentListView);
@@ -34,9 +39,11 @@ public class SharedListsProductsActivity extends AppCompatActivity {
 
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(SharedListsProductsViewModel.class);
-
+        TextView title = findViewById(R.id.title);
         // Get the list ID passed from the previous activity
         String listId = getIntent().getStringExtra("LIST_ID");
+        String listTitle = getIntent().getStringExtra("LIST_NAME");
+        title.setText(listTitle);
 
         // Validate that a valid list ID was received
         if (listId == null || listId.isEmpty()) {
@@ -59,5 +66,15 @@ public class SharedListsProductsActivity extends AppCompatActivity {
 
         // Fetch content for the specified list ID
         viewModel.fetchContent(listId);
+        findViewById(R.id.back).setOnClickListener(this);
+    }
+    @Override
+    public void onClick(View view)
+    {
+        if (view.getId() == R.id.back)
+        {
+            Intent intent = new Intent(this, MyListsActivity.class);
+            startActivity(intent);
+        }
     }
 }

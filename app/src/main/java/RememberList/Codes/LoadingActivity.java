@@ -15,7 +15,7 @@ public class LoadingActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_loading);
 
 		// Connect to the ViewModel
 		viewModel.init(this); // Initialize ViewModel with context for SharedPreferences

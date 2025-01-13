@@ -1,15 +1,17 @@
 package RememberList.Codes;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-
+import android.widget.TextView;
 import java.util.ArrayList;
 
 public class ListProductsActivity extends AppCompatActivity implements View.OnClickListener
@@ -25,7 +27,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main3);
+        setContentView(R.layout.activity_listsproducts);
 
         // Initialize UI elements
         editText = findViewById(R.id.editText);
@@ -34,6 +36,8 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(ListProductsViewModel.class);
         listName = getIntent().getStringExtra("LIST_NAME"); // Get the list name passed via Intent
+        TextView title = findViewById(R.id.textview);
+        title.setText(listName);
         viewModel.init(listName); // Initialize ViewModel with the list name
 
         // Observe products LiveData to update the UI when data changes
@@ -45,9 +49,10 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
             }
         });
 
-        // Set click listeners for the "Add" and "Delete" buttons
+        // Set click listeners for the buttons
         findViewById(R.id.add).setOnClickListener(this);
         findViewById(R.id.delete).setOnClickListener(this);
+        findViewById(R.id.back).setOnClickListener(this);
     }
 
     @Override
@@ -72,6 +77,11 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         {
             // Handle deleting selected products
             showDeleteConfirmationDialog();
+        }
+        else if (view.getId() == R.id.back)
+        {
+            Intent intent = new Intent(this, MyListsActivity.class);
+            startActivity(intent);
         }
     }
 

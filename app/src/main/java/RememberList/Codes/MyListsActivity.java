@@ -27,9 +27,10 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
     private int selectedPosition; // Selected position for deletion
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
+        setContentView(R.layout.activity_mylists);
 
         // Initialize UI elements
         add = findViewById(R.id.add);
@@ -64,7 +65,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
 
     private void setupListClickListeners()
     {
-        // Navigate to Main3Activity on item click
+        // Navigate to ListProductsActivity on item click
         list.setOnItemClickListener((parent, view, position, id) -> {
             selectedList = adapter.getItem(position);
             Intent intent = new Intent(this, ListProductsActivity.class);
@@ -115,7 +116,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         }
         else if (view == sharelists)
         {
-            // Navigate to Main4Activity
+            // Navigate to SharedListsActivity
             Intent intent = new Intent(this, SharedListsActivity.class);
             startActivity(intent);
         }

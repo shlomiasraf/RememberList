@@ -14,7 +14,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import java.util.Map;
 
-public class SharedListsActivity extends AppCompatActivity {
+public class SharedListsActivity extends AppCompatActivity implements View.OnClickListener
+{
 
     private SharedListsViewModel viewModel; // ViewModel for data and logic
     private ListView listView; // ListView to display list titles
@@ -25,7 +26,7 @@ public class SharedListsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main4);
+        setContentView(R.layout.activity_sharedlists);
 
         // Initialize UI components
         listView = findViewById(R.id.listView);
@@ -74,6 +75,7 @@ public class SharedListsActivity extends AppCompatActivity {
                 {
                     // Pass the selected list ID to Main5Activity
                     Intent intent = new Intent(SharedListsActivity.this, SharedListsProductsActivity.class);
+                    intent.putExtra("LIST_NAME", selectedTitle); // Pass the list name
                     intent.putExtra("LIST_ID", selectedListId); // Add list ID to intent
                     startActivity(intent); // Start Main5Activity
                 }
@@ -84,5 +86,16 @@ public class SharedListsActivity extends AppCompatActivity {
                 }
             }
         });
+        findViewById(R.id.back).setOnClickListener(this);
     }
+    @Override
+    public void onClick(View view)
+    {
+        if (view.getId() == R.id.back)
+        {
+            Intent intent = new Intent(this, MyListsActivity.class);
+            startActivity(intent);
+        }
+    }
+
 }
