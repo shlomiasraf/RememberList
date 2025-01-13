@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <ImageButton
+            android:id="@+id/back"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/back" />
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="280dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="רשימות ששותפו"
+            android:textSize="18dp" />
+        <ImageButton
+            android:id="@+id/refresh"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/background"
+            android:src="@drawable/refresh" />
+</LinearLayout>
+
+<TextView
+        android:id="@+id/text2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="55dp"
+        android:text="הרשימות המשותפות מדורגות לפי פופולריות"
+        android:textSize="15dp" />
+
+    <Button
+        android:id="@+id/filter"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:text="סנן לפי קטגוריה"
+        android:background="@drawable/background"
+        android:layout_marginTop="80dp"
+        android:layout_marginBottom="16dp"
+        android:layout_alignParentStart="true" />
+
+    <!-- Search EditText -->
+
+    <!-- ProgressBar -->
+
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/filter"
+        android:layout_marginTop="-55dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginStart="150dp"
+        android:backgroundTint="#d8000000"
+        android:hint="חפש לפי שם" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editText"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- ListView -->
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/progressBar"
+        android:layout_marginTop="16dp" />
+
+</RelativeLayout>
