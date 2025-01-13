@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.content.Context;
 import androidx.lifecycle.LiveData;
@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainViewModel extends ViewModel {
+public class LoadingViewModel extends ViewModel {
     private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private final MutableLiveData<FirebaseUser> userState = new MutableLiveData<>();
     private final MutableLiveData<Boolean> loadingState = new MutableLiveData<>();

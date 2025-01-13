@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.content.Context;
 import android.graphics.Paint;

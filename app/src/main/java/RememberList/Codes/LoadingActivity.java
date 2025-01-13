@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,8 +8,8 @@ import androidx.lifecycle.Observer;
 
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity {
-	private final MainViewModel viewModel = new MainViewModel();
+public class LoadingActivity extends AppCompatActivity {
+	private final LoadingViewModel viewModel = new LoadingViewModel();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -43,14 +43,14 @@ public class MainActivity extends AppCompatActivity {
 
 	private void navigateToMainScreen()
 	{
-		Intent intent = new Intent(MainActivity.this, Main2Activity.class);
+		Intent intent = new Intent(LoadingActivity.this, MyListsActivity.class);
 		startActivity(intent);
 		finish(); // Close the current activity
 	}
 
 	private void navigateToLoginScreen()
 	{
-		Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+		Intent intent = new Intent(LoadingActivity.this, LoginActivity.class);
 		startActivity(intent);
 		finish(); // Close the current activity
 	}

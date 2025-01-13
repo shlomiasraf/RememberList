@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,7 +16,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity
+{
 
     private static final int RC_SIGN_IN = 101;
     private LoginViewModel viewModel;
@@ -113,7 +114,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void navigateToMain()
     {
-        Intent intent = new Intent(LoginActivity.this, Main2Activity.class);
+        Intent intent = new Intent(LoginActivity.this, MyListsActivity.class);
         startActivity(intent);
         finish();
     }

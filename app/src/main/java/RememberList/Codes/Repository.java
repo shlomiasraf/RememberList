@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -23,7 +23,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class Repository {
+public class Repository
+{
 
     // Firebase authentication instance
     private final FirebaseAuth mAuth;
@@ -269,7 +270,8 @@ public class Repository {
     /**
      * Adds a new list to SharedPreferences.
      */
-    public void addList(String listName, MutableLiveData<String> errorLiveData) {
+    public void addList(String listName, MutableLiveData<String> errorLiveData)
+    {
         try
         {
             SharedPreferences.Editor editor = sp1.edit();
@@ -340,22 +342,25 @@ public class Repository {
         {
             SharedPreferences.Editor editor = sp2.edit();
             // Adjust the keys to maintain a continuous sequence
+            String newKey = keyPrefix + index;
             for (int i = index + 2; i < sp2.getAll().size(); i++)
             {
                 // Shift each value one step down in the sequence
                 String currentKey = keyPrefix + i;        // Current key
-                String newKey = keyPrefix + (i - 1);      // New shifted key
+                newKey = keyPrefix + (i - 1);      // New shifted key
                 String currentValue = sp2.getString(currentKey, null);
-
                 if (currentValue != null)
                 {
                     editor.putString(newKey, currentValue); // Assign current value to the new key
                 }
+                else
+                {
+                    break;
+                }
             }
 
             // Remove the last key in the sequence
-            String lastKey = keyPrefix + (sp2.getAll().size() - 2);
-            editor.remove(lastKey);
+            editor.remove(newKey);
             // Commit the changes to SharedPreferences
             editor.apply();
         }

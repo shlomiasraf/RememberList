@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,9 +15,10 @@ import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
 
-public class Main2Activity extends AppCompatActivity implements View.OnClickListener {
+public class MyListsActivity extends AppCompatActivity implements View.OnClickListener
+{
 
-    private Main2ViewModel viewModel; // ViewModel instance
+    private MyListsViewModel viewModel; // ViewModel instance
     private ArrayAdapter<String> adapter; // Adapter to display the lists
     private ListView list; // ListView for displaying lists
     private EditText editText; // EditText for input
@@ -37,7 +38,7 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
         list = findViewById(R.id.listView);
 
         // Initialize ViewModel
-        viewModel = new ViewModelProvider(this).get(Main2ViewModel.class);
+        viewModel = new ViewModelProvider(this).get(MyListsViewModel.class);
 
         // Initialize the adapter
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>());
@@ -66,7 +67,7 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
         // Navigate to Main3Activity on item click
         list.setOnItemClickListener((parent, view, position, id) -> {
             selectedList = adapter.getItem(position);
-            Intent intent = new Intent(this, Main3Activity.class);
+            Intent intent = new Intent(this, ListProductsActivity.class);
             intent.putExtra("LIST_NAME", selectedList); // Pass the list name
             startActivity(intent);
         });
@@ -115,7 +116,7 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
         else if (view == sharelists)
         {
             // Navigate to Main4Activity
-            Intent intent = new Intent(this, Main4Activity.class);
+            Intent intent = new Intent(this, SharedListsActivity.class);
             startActivity(intent);
         }
     }

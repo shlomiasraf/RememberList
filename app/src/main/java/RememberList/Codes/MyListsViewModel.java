@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.app.Application;
 
@@ -13,7 +13,8 @@ import java.util.List;
  * ViewModel for managing the list of items in Main2Activity.
  * Handles interaction between the UI and the Repository for adding, deleting, and loading lists.
  */
-public class Main2ViewModel extends AndroidViewModel {
+public class MyListsViewModel extends AndroidViewModel
+{
     // LiveData to hold the list of items
     private final MutableLiveData<List<String>> lists = new MutableLiveData<>();
     // LiveData to hold error messages
@@ -28,7 +29,7 @@ public class Main2ViewModel extends AndroidViewModel {
      *
      * @param application The application context
      */
-    public Main2ViewModel(@NonNull Application application)
+    public MyListsViewModel(@NonNull Application application)
     {
         super(application);
         repository = new Repository(application); // Initialize Repository

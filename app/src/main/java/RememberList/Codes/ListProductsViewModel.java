@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -9,7 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Main3ViewModel extends AndroidViewModel {
+public class ListProductsViewModel extends AndroidViewModel {
 
     private final Repository repository; // Repository to manage data operations
     private final MutableLiveData<List<Product>> products = new MutableLiveData<>(); // LiveData for the list of products
@@ -17,7 +17,7 @@ public class Main3ViewModel extends AndroidViewModel {
     private final MutableLiveData<String> errorLiveData = new MutableLiveData<>(); // LiveData for error messages
     private String listName; // The name of the list being managed
 
-    public Main3ViewModel(@NonNull Application application)
+    public ListProductsViewModel(@NonNull Application application)
     {
         super(application);
         repository = new Repository(application); // Initialize the repository
@@ -112,13 +112,13 @@ public class Main3ViewModel extends AndroidViewModel {
         try
         {
             // Reverse loop to avoid index shifting issues
-            for (int i = selectedProducts.size() - 1; i >= 0; i--)
+            for (int i = 0; i < selectedProducts.size(); i++)
             {
                 Product product = selectedProducts.get(i);
                 int index = products.getValue() != null ? products.getValue().indexOf(product) : -1;
                 if (index >= 0)
                 {
-                    repository.deleteValue(listName, index, errorLiveData); // Delete the product from the repository
+                    repository.deleteValue(listName, index-i, errorLiveData); // Delete the product from the repository
                 }
             }
             loadProducts(); // Reload products to reflect changes

@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -9,7 +9,8 @@ import androidx.lifecycle.MutableLiveData;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.firebase.auth.FirebaseUser;
 
-public class LoginViewModel extends AndroidViewModel {
+public class LoginViewModel extends AndroidViewModel
+{
 
     private final Repository repository;
     private final MutableLiveData<FirebaseUser> userLiveData;

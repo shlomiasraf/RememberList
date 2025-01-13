@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -8,14 +8,14 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.util.List;
 
-public class Main5ViewModel extends AndroidViewModel {
+public class SharedListsProductsViewModel extends AndroidViewModel {
 
     private final Repository repository; // Repository instance
     private final MutableLiveData<List<String>> contentLiveData = new MutableLiveData<>(); // LiveData for list content
     private final MutableLiveData<Boolean> loadingLiveData = new MutableLiveData<>(); // LiveData for loading state
     private final MutableLiveData<String> errorLiveData = new MutableLiveData<>(); // LiveData for error messages
 
-    public Main5ViewModel(@NonNull Application application)
+    public SharedListsProductsViewModel(@NonNull Application application)
     {
         super(application);
         repository = new Repository(application); // Initialize the Repository

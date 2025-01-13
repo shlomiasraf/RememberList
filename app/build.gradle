@@ -7,12 +7,12 @@ android {
     compileSdk 33 // Define the SDK version used to compile the app
 
     defaultConfig {
-        applicationId "com.example.shlomi.rememberlist" // Unique identifier for your app
+        applicationId "RememberList.Codes" // Unique identifier for your app
         minSdk 21 // Minimum supported Android version
         targetSdk 33 // Targeted Android version
         versionCode 1 // Internal version code for the app
         versionName "1.0" // Human-readable version name
-        namespace "com.example.shlomi.rememberlist" // Define the app's namespace
+        namespace "RememberList.Codes" // Define the app's namespace
     }
 
     buildTypes {

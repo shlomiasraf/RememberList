@@ -1,6 +1,7 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
-public class Product {
+public class Product
+{
     String name; // The name of the product
     boolean box; // The checkbox state for the product (checked or unchecked)
 

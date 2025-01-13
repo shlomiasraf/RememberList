@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.os.Bundle;
 import android.view.View;
@@ -12,9 +12,9 @@ import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
 
-public class Main3Activity extends AppCompatActivity implements View.OnClickListener
+public class ListProductsActivity extends AppCompatActivity implements View.OnClickListener
 {
-    private Main3ViewModel viewModel; // ViewModel for managing data
+    private ListProductsViewModel viewModel; // ViewModel for managing data
     private ListAdapter boxAdapter; // Adapter for the ListView
     private EditText editText; // Input field for adding products
     private ListView lvMain; // ListView for displaying products
@@ -32,7 +32,7 @@ public class Main3Activity extends AppCompatActivity implements View.OnClickList
         lvMain = findViewById(R.id.listView);
 
         // Initialize ViewModel
-        viewModel = new ViewModelProvider(this).get(Main3ViewModel.class);
+        viewModel = new ViewModelProvider(this).get(ListProductsViewModel.class);
         listName = getIntent().getStringExtra("LIST_NAME"); // Get the list name passed via Intent
         viewModel.init(listName); // Initialize ViewModel with the list name
 
@@ -40,7 +40,7 @@ public class Main3Activity extends AppCompatActivity implements View.OnClickList
         viewModel.getProducts().observe(this, products -> {
             if (products != null)
             {
-                boxAdapter = new ListAdapter(Main3Activity.this, new ArrayList<>(products)); // Ensure a fresh ArrayList
+                boxAdapter = new ListAdapter(ListProductsActivity.this, new ArrayList<>(products)); // Ensure a fresh ArrayList
                 lvMain.setAdapter(boxAdapter); // Set the adapter for the ListView
             }
         });

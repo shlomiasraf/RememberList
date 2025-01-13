@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
@@ -11,9 +11,9 @@ import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
 
-public class Main5Activity extends AppCompatActivity {
+public class SharedListsProductsActivity extends AppCompatActivity {
 
-    private Main5ViewModel viewModel; // ViewModel instance
+    private SharedListsProductsViewModel viewModel; // ViewModel instance
     private ListView contentListView; // ListView for displaying content
     private ArrayAdapter<String> adapter; // Adapter for ListView
     private ArrayList<String> contentList; // Data list for the adapter
@@ -33,7 +33,7 @@ public class Main5Activity extends AppCompatActivity {
         contentListView.setAdapter(adapter);
 
         // Initialize ViewModel
-        viewModel = new ViewModelProvider(this).get(Main5ViewModel.class);
+        viewModel = new ViewModelProvider(this).get(SharedListsProductsViewModel.class);
 
         // Get the list ID passed from the previous activity
         String listId = getIntent().getStringExtra("LIST_ID");

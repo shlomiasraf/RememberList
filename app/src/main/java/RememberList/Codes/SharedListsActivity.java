@@ -1,4 +1,4 @@
-package com.example.shlomi.rememberlist;
+package RememberList.Codes;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,9 +14,9 @@ import androidx.lifecycle.ViewModelProvider;
 
 import java.util.Map;
 
-public class Main4Activity extends AppCompatActivity {
+public class SharedListsActivity extends AppCompatActivity {
 
-    private Main4ViewModel viewModel; // ViewModel for data and logic
+    private SharedListsViewModel viewModel; // ViewModel for data and logic
     private ListView listView; // ListView to display list titles
     private ProgressBar progressBar; // ProgressBar to indicate loading
     private ArrayAdapter<String> adapter; // Adapter for ListView
@@ -36,7 +36,7 @@ public class Main4Activity extends AppCompatActivity {
         listView.setAdapter(adapter);
 
         // Initialize ViewModel
-        viewModel = new ViewModelProvider(this).get(Main4ViewModel.class);
+        viewModel = new ViewModelProvider(this).get(SharedListsViewModel.class);
 
         // Observe LiveData for list titles
         viewModel.getListsLiveData().observe(this, lists -> {
@@ -73,14 +73,14 @@ public class Main4Activity extends AppCompatActivity {
                 if (selectedListId != null)
                 {
                     // Pass the selected list ID to Main5Activity
-                    Intent intent = new Intent(Main4Activity.this, Main5Activity.class);
+                    Intent intent = new Intent(SharedListsActivity.this, SharedListsProductsActivity.class);
                     intent.putExtra("LIST_ID", selectedListId); // Add list ID to intent
                     startActivity(intent); // Start Main5Activity
                 }
                 else
                 {
                     // Show an error message if no matching list ID is found
-                    Toast.makeText(Main4Activity.this, "Failed to find list ID for the selected title", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SharedListsActivity.this, "Failed to find list ID for the selected title", Toast.LENGTH_SHORT).show();
                 }
             }
         });
