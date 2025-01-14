@@ -314,15 +314,29 @@ public class Repository
      */
     public void deleteList(String listName, MutableLiveData<String> errorLiveData) {
         try {
-            SharedPreferences.Editor editor = sp1.edit();
+            SharedPreferences.Editor editor1 = sp1.edit();
+            SharedPreferences.Editor editor2 = sp2.edit();
+
             List<String> lists = getLists();
+
+            // Step 1: Remove the values associated with this list in sp2
+            String keyPrefix = listName;
+            for (int i = 1; sp2.contains(keyPrefix + i); i++)
+            {
+                editor2.remove(keyPrefix + i);
+            }
+
+            // Step 2: Remove the list name from sp1
             lists.remove(listName);
-            editor.clear();
+            editor1.clear();
             for (int i = 0; i < lists.size(); i++)
             {
-                editor.putString(String.valueOf(i), lists.get(i));
+                editor1.putString(String.valueOf(i), lists.get(i));
             }
-            editor.apply();
+
+            editor2.apply();
+            editor1.apply();
+
         }
         catch (Exception e)
         {
