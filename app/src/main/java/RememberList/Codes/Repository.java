@@ -294,7 +294,7 @@ public class Repository
         try
         {
             SharedPreferences.Editor editor = sp2.edit();
-            int size = 0;
+            int size = 1;
             // Find the next available index for the keyPrefix
             while (sp2.contains(keyPrefix + size))
             {

@@ -16,7 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 // ListAdapter extends BaseAdapter to manage the list of Product objects
-public class ListAdapter extends BaseAdapter {
+public class ListAdapter extends BaseAdapter
+{
     Context ctx;  // Context to access resources and system services
     LayoutInflater lInflater;  // Inflater to create views from XML layouts
     ArrayList<Product> objects;  // List of products to display
