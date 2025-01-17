@@ -27,17 +27,20 @@ public class Repository
 {
 
     // Firebase authentication instance
+    //FirebaseAuth: The Firebase Authentication SDK class used to manage authentication operations.
     private final FirebaseAuth mAuth;
 
     // Firebase Realtime Database reference
+    //DatabaseReference: A class provided by Firebase to interact with nodes in the Realtime Database.
     private final DatabaseReference databaseReference;
 
     // Maps list IDs to their titles
+    //A generic map where both keys (IDs) and values (titles) are String.
     private final HashMap<String, String> listIdToTitleMap = new HashMap<>();
 
     // SharedPreferences for managing lists and values
-    private final SharedPreferences sp1;
-    private final SharedPreferences sp2;
+    private final SharedPreferences sp1; //store and manage data related to lists
+    private final SharedPreferences sp2; //store and manage data related to values
 
     // Application context for accessing resources
     private final Context context;
@@ -62,8 +65,7 @@ public class Repository
     /**
      * Logs in a user using email and password.
      */
-    public void loginWithEmail(String email, String password, MutableLiveData<FirebaseUser> userLiveData,
-                               MutableLiveData<String> errorLiveData, MutableLiveData<Boolean> loadingLiveData)
+    public void loginWithEmail(String email, String password, MutableLiveData<FirebaseUser> userLiveData, MutableLiveData<String> errorLiveData, MutableLiveData<Boolean> loadingLiveData)
     {
         loadingLiveData.setValue(true);
         mAuth.signInWithEmailAndPassword(email, password)
@@ -83,8 +85,7 @@ public class Repository
     /**
      * Registers a user using email and password.
      */
-    public void registerWithEmail(String email, String password, MutableLiveData<FirebaseUser> userLiveData,
-                                  MutableLiveData<String> errorLiveData, MutableLiveData<Boolean> loadingLiveData)
+    public void registerWithEmail(String email, String password, MutableLiveData<FirebaseUser> userLiveData, MutableLiveData<String> errorLiveData, MutableLiveData<Boolean> loadingLiveData)
     {
         loadingLiveData.setValue(true);
         mAuth.createUserWithEmailAndPassword(email, password)
@@ -178,7 +179,7 @@ public class Repository
             byte[] buffer = new byte[size];
             input.read(buffer); // Read the file content into the buffer
             input.close();
-            // Convert byte array to string with encoding "windows-1255"
+            // Convert byte array to string with encoding "windows-1255"(for Hebrew)
             String st = new String(buffer, "windows-1255");
             // Split the string by commas to get individual lists
             String[] lists = st.split(",");
@@ -398,7 +399,7 @@ public class Repository
             public void onDataChange(DataSnapshot dataSnapshot)
             {
                 List<String> lists = new ArrayList<>();
-                listIdToTitleMap.clear();
+                listIdToTitleMap.clear(); // Avoids stale data
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren())
                 {
@@ -427,8 +428,7 @@ public class Repository
     /**
      * Fetches the content of a specific list from Firebase.
      */
-    public void fetchContent(String listId, MutableLiveData<List<String>> contentLiveData, MutableLiveData<String> errorLiveData, MutableLiveData<Boolean> loadingLiveData) {
-        loadingLiveData.setValue(true);
+    public void fetchContent(String listId, MutableLiveData<List<String>> contentLiveData, MutableLiveData<String> errorLiveData, MutableLiveData<Boolean> loadingLiveData) {loadingLiveData.setValue(true);
 
         DatabaseReference listReference = databaseReference.child(listId);
 
