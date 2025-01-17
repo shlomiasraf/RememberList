@@ -106,4 +106,11 @@ public class MyListsViewModel extends AndroidViewModel
         }
         loadingLiveData.setValue(false); // Indicate loading finished
     }
+    /**
+     * Logs the user out.
+     */
+    public void logout()
+    {
+        repository.logout(); // Call the logout method from the Repository // ADDED
+    }
 }
