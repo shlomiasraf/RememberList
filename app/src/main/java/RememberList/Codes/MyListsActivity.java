@@ -22,7 +22,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
     private ArrayAdapter<String> adapter; // Adapter to display the lists
     private ListView list; // ListView for displaying lists
     private EditText editText; // EditText for input
-    private Button sharelists, add; // Buttons for actions
+    private Button sharelists, add, signOutButton; // Buttons for actions
     private String selectedList; // Selected list for deletion
     private int selectedPosition; // Selected position for deletion
 
@@ -32,11 +32,13 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mylists);
 
+
         // Initialize UI elements
         add = findViewById(R.id.add);
         sharelists = findViewById(R.id.sharelists);
         editText = findViewById(R.id.editText);
         list = findViewById(R.id.listView);
+        signOutButton = findViewById(R.id.signOutButton);
 
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(MyListsViewModel.class);
@@ -58,6 +60,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         // Set click listeners
         add.setOnClickListener(this);
         sharelists.setOnClickListener(this);
+        signOutButton.setOnClickListener(this);
 
         // Handle list item clicks
         setupListClickListeners();
@@ -120,5 +123,20 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
             Intent intent = new Intent(this, SharedListsActivity.class);
             startActivity(intent);
         }
+        else if (view == signOutButton) {
+            // Handle sign-out
+            handleSignOut();
+        }
+    }
+    private void handleSignOut() {
+        // Call the logout function from the repository
+        viewModel.logout(); // Assuming the ViewModel has a logout method that calls repository.logout()
+
+        // Redirect to LoginActivity
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear the activity stack
+        startActivity(intent);
+
+        Toast.makeText(this, "Signed out successfully", Toast.LENGTH_SHORT).show();
     }
 }
