@@ -5,7 +5,10 @@ plugins {
 
 android {
     compileSdk 33 // Define the SDK version used to compile the app
-
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
     defaultConfig {
         applicationId "RememberList.Codes" // Unique identifier for your app
         minSdk 21 // Minimum supported Android version
@@ -13,6 +16,8 @@ android {
         versionCode 1 // Internal version code for the app
         versionName "1.0" // Human-readable version name
         namespace "RememberList.Codes" // Define the app's namespace
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -36,11 +41,15 @@ dependencies {
     implementation 'com.google.android.material:material:1.9.0' // Material Design components
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4' // Layout library
 
-    // Testing libraries
-    testImplementation 'junit:junit:4.13.2' // Unit testing framework
+    // For local unit tests
+    testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:4.0.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5' // Android testing support for JUnit
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1' // UI testing library
+
+    // For Android instrumented tests
+    androidTestImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'org.mockito:mockito-android:4.0.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     // Firebase BoM (Bill of Materials) - Ensures compatible versions for all Firebase libraries
     implementation platform('com.google.firebase:firebase-bom:32.3.0')
