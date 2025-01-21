@@ -58,7 +58,7 @@
 
         <EditText
             android:id="@+id/editText"
-            android:layout_width="match_parent"
+            android:layout_width="335dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="@dimen/fab_margin"
             android:backgroundTint="#d8000000"
