@@ -38,6 +38,7 @@ dependencies {
 
     // Testing libraries
     testImplementation 'junit:junit:4.13.2' // Unit testing framework
+    testImplementation 'org.mockito:mockito-core:4.0.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5' // Android testing support for JUnit
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1' // UI testing library
 
