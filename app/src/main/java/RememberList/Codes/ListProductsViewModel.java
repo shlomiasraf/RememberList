@@ -17,6 +17,10 @@ public class ListProductsViewModel extends AndroidViewModel {
     private final MutableLiveData<String> errorLiveData = new MutableLiveData<>(); // LiveData for error messages
     private String listName; // The name of the list being managed
 
+    /**
+     * ViewModel for managing and interacting with a list of products.
+     * Provides data to the UI and handles interactions with the repository.
+     */
     public ListProductsViewModel(@NonNull Application application)
     {
         super(application);

@@ -8,50 +8,56 @@ import androidx.lifecycle.Observer;
 
 import com.google.firebase.auth.FirebaseUser;
 
-public class LoadingActivity extends AppCompatActivity {
+// The LoadingActivity class handles user authentication checks and initial loading logic
+public class LoadingActivity extends AppCompatActivity
+{
+	// ViewModel instance for managing data and state
 	private final LoadingViewModel viewModel = new LoadingViewModel();
 
+	// Called when the activity is first created
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_loading);
+		setContentView(R.layout.activity_loading); // Set the layout for the activity
 
-		// Connect to the ViewModel
-		viewModel.init(this); // Initialize ViewModel with context for SharedPreferences
+		// Initialize the ViewModel and provide application context for SharedPreferences or other dependencies
+		viewModel.init(this);
 
-		// Observe changes in user state
+		// Observe changes in the user authentication state
 		viewModel.getUserState().observe(this, new Observer<FirebaseUser>()
 		{
 			@Override
 			public void onChanged(FirebaseUser user)
 			{
-				if (user != null)
+				if (user != null) // If a user is logged in
 				{
-					navigateToMainScreen(); // If user is authenticated, navigate to the main screen
+					navigateToMainScreen(); // Navigate to the main activity
 				}
-				else
+				else// If no user is logged in
 				{
-					navigateToLoginScreen(); // If user is not authenticated, navigate to login screen
+					navigateToLoginScreen();  // Navigate to the login activity
 				}
 			}
 		});
 
-		// Check and load data if necessary
+		// Trigger data loading or checks if needed
 		viewModel.checkAndLoadData();
 	}
 
+	// Navigate to the main screen (MyListsActivity) when the user is authenticated
 	private void navigateToMainScreen()
 	{
 		Intent intent = new Intent(LoadingActivity.this, MyListsActivity.class);
-		startActivity(intent);
-		finish(); // Close the current activity
+		startActivity(intent);// Start the main activity
+		finish();  // Close the current activity to prevent going back
 	}
 
+	// Navigate to the login screen (LoginActivity) when the user is not authenticated
 	private void navigateToLoginScreen()
 	{
 		Intent intent = new Intent(LoadingActivity.this, LoginActivity.class);
-		startActivity(intent);
-		finish(); // Close the current activity
+		startActivity(intent); // Start the login activity
+		finish();  // Close the current activity to prevent going back
 	}
 }

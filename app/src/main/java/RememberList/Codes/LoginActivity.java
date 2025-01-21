@@ -16,13 +16,18 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 
+// The LoginActivity class manages the login screen for the app
+
 public class LoginActivity extends AppCompatActivity
 {
-
+    // Constant used to identify Google sign-in requests(arbitrary variable)
     private static final int RC_SIGN_IN = 101;
-    private LoginViewModel viewModel;
-    private GoogleSignInClient googleSignInClient;
 
+    // Variables for managing ViewModel and Google sign-in:
+    private LoginViewModel viewModel; // Manages login-related logic
+    private GoogleSignInClient googleSignInClient; //Manages Google sign-in client
+
+    // UI elements:
     private EditText editTextEmail, editTextPassword;
     private Button buttonLogin, buttonRegister;
     private SignInButton buttonGoogleSignIn;
@@ -31,91 +36,94 @@ public class LoginActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_login);  // Link the activity to its XML layout
 
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(LoginViewModel.class);
 
         // Configure Google Sign-In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
+                .requestIdToken(getString(R.string.default_web_client_id)) // Request client ID from server
+                .requestEmail()// Request user's email
                 .build();
-        googleSignInClient = GoogleSignIn.getClient(this, gso);
+        googleSignInClient = GoogleSignIn.getClient(this, gso); // Create Google sign-in client
 
-        // Initialize UI elements
-        editTextEmail = findViewById(R.id.editTextEmail);
-        editTextPassword = findViewById(R.id.editTextPassword);
-        buttonLogin = findViewById(R.id.buttonLogin);
-        buttonRegister = findViewById(R.id.buttonRegister);
-        buttonGoogleSignIn = findViewById(R.id.buttonGoogleSignIn);
+        // Link UI elements from XML
+        editTextEmail = findViewById(R.id.editTextEmail); // Email text field
+        editTextPassword = findViewById(R.id.editTextPassword); // Password text field
+        buttonLogin = findViewById(R.id.buttonLogin); // Login button
+        buttonRegister = findViewById(R.id.buttonRegister); // Register button
+        buttonGoogleSignIn = findViewById(R.id.buttonGoogleSignIn);// Google sign-in button
 
-        // Observers
+        // Observe changes in the ViewModel data:
         viewModel.getUserLiveData().observe(this, user -> {
             if (user != null)
             {
-                navigateToMain();
+                navigateToMain(); // Navigate to the main screen
             }
         });
 
         viewModel.getErrorLiveData().observe(this, error -> {
-            if (error != null)
+            if (error != null) // If there is an error
             {
-                Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, error, Toast.LENGTH_SHORT).show(); // Display error message
             }
         });
 
         viewModel.getLoadingLiveData().observe(this, isLoading -> {
-            // Implement loading indicator visibility logic here if needed
+            // Logic to show or hide a loading indicator if needed
         });
 
-        // Email/Password Login
+        // Handle login with email and password
         buttonLogin.setOnClickListener(v -> {
-            String email = editTextEmail.getText().toString().trim();
-            String password = editTextPassword.getText().toString().trim();
-            viewModel.loginWithEmail(email, password);
+            String email = editTextEmail.getText().toString().trim();// Get email input
+            String password = editTextPassword.getText().toString().trim();// Get password input
+            viewModel.loginWithEmail(email, password); // Call login method in ViewModel
         });
 
-        // Register with Email/Password
+        // Handle registration with email and password
         buttonRegister.setOnClickListener(v -> {
-            String email = editTextEmail.getText().toString().trim();
-            String password = editTextPassword.getText().toString().trim();
-            viewModel.registerWithEmail(email, password);
+            String email = editTextEmail.getText().toString().trim();// Get email input
+            String password = editTextPassword.getText().toString().trim(); // Get password input
+            viewModel.registerWithEmail(email, password); // Call registration method in ViewModel
         });
 
-        // Google Sign-In
+        // Handle Google sign-in
         buttonGoogleSignIn.setOnClickListener(v -> loginWithGoogle());
     }
 
+    // Function to handle Google sign-in
     private void loginWithGoogle()
     {
-        Intent signInIntent = googleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
+        Intent signInIntent = googleSignInClient.getSignInIntent();// Get the intent for Google sign-in
+        startActivityForResult(signInIntent, RC_SIGN_IN);// Start the activity expecting a result
     }
 
+    // Function to handle the result from an activity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == RC_SIGN_IN)
+        if (requestCode == RC_SIGN_IN) // Check if the result is from Google sign-in
         {
             try
             {
+                // Get the Google account from the result
                 GoogleSignInAccount account = GoogleSignIn.getSignedInAccountFromIntent(data).getResult(ApiException.class);
-                viewModel.firebaseAuthWithGoogle(account);
+                viewModel.firebaseAuthWithGoogle(account); // Authenticate with Firebase using the Google account
             }
-            catch (ApiException e)
+            catch (ApiException e)// Handle sign-in errors
             {
-                Toast.makeText(this, "Google sign-in failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Google sign-in failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();// Display error message
             }
         }
     }
-
+    // Function to navigate to the main screen
     private void navigateToMain()
     {
-        Intent intent = new Intent(LoginActivity.this, MyListsActivity.class);
-        startActivity(intent);
-        finish();
+        Intent intent = new Intent(LoginActivity.this, MyListsActivity.class); // Create an intent for the main screen
+        startActivity(intent); // Start the main screen activity
+        finish(); // Close the current activity
     }
 }

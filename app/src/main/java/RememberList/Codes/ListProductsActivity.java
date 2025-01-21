@@ -14,6 +14,10 @@ import androidx.lifecycle.ViewModelProvider;
 import android.widget.TextView;
 import java.util.ArrayList;
 
+/**
+ * Activity for managing the products within a specific list.
+ * Displays the products, allows adding new ones, and supports deletion of selected items.
+ */
 public class ListProductsActivity extends AppCompatActivity implements View.OnClickListener
 {
     private ListProductsViewModel viewModel; // ViewModel for managing data
@@ -26,7 +30,11 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        //Calls the onCreate method of the superclass (AppCompatActivity)
+        // to ensure that the base class's initialization (e.g., setting up the activity context)
+        // is performed.
         super.onCreate(savedInstanceState);
+        //Specifies the XML layout file (activity_listsproducts) that defines the UI of the activity.
         setContentView(R.layout.activity_listsproducts);
 
         // Initialize UI elements
@@ -41,7 +49,8 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         viewModel.init(listName); // Initialize ViewModel with the list name
 
         // Observe products LiveData to update the UI when data changes
-        viewModel.getProducts().observe(this, products -> {
+        viewModel.getProducts().observe(this, products ->
+        {
             if (products != null)
             {
                 boxAdapter = new ListAdapter(ListProductsActivity.this, new ArrayList<>(products)); // Ensure a fresh ArrayList

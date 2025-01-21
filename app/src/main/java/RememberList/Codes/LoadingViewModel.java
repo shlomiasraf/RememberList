@@ -8,73 +8,83 @@ import androidx.lifecycle.ViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class LoadingViewModel extends ViewModel {
+// ViewModel class for the LoadingActivity
+public class LoadingViewModel extends ViewModel
+{
+    // Firebase authentication instance
     private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    // LiveData to observe user state (logged in or not)
     private final MutableLiveData<FirebaseUser> userState = new MutableLiveData<>();
+    // LiveData to observe loading state (e.g., showing or hiding a progress bar)
     private final MutableLiveData<Boolean> loadingState = new MutableLiveData<>();
+    // LiveData to observe error messages
     private final MutableLiveData<String> errorState = new MutableLiveData<>();
+    // Repository for handling data operations
     private Repository repository;
 
+
+    // Initialize the ViewModel
     public void init(Context context)
     {
-        // Initialize the repository
+        // Create the repository with the given context (e.g., for SharedPreferences or database access)
         repository = new Repository(context);
 
-        // Check the current user state
+        // Check the current user's authentication state
         checkUserState();
     }
 
+    // Check the authentication state of the current user
     private void checkUserState()
     {
-        loadingState.setValue(true); // Start loading
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        loadingState.setValue(true);  // Indicate that a loading process has started
+        FirebaseUser currentUser = mAuth.getCurrentUser(); // Get the currently signed-in user
 
-        if (currentUser != null)
+        if (currentUser != null) // If a user is signed in
         {
             // Reload user data to ensure it is up-to-date
             currentUser.reload().addOnCompleteListener(task -> {
-                loadingState.setValue(false); // Stop loading
-                if (task.isSuccessful())
+                loadingState.setValue(false);  // Indicate that loading has completed
+                if (task.isSuccessful()) // If reload was successful
                 {
-                    userState.setValue(currentUser); // User is valid
+                    userState.setValue(currentUser);  // Update user state with the current user
                 }
-                else
+                else // If reload failed
                 {
-                    mAuth.signOut(); // Sign out if user is invalid
-                    userState.setValue(null);
-                    errorState.setValue("Failed to reload user data. Signing out.");
+                    mAuth.signOut();  // Sign out the user
+                    userState.setValue(null);// Clear the user state
+                    errorState.setValue("Failed to reload user data. Signing out.");// Notify about the error
                 }
             });
         }
-        else
+        else // If no user is signed in
         {
-            loadingState.setValue(false); // Stop loading
-            userState.setValue(null); // No user signed in
+            loadingState.setValue(false); // Indicate that loading has completed
+            userState.setValue(null);  // Clear the user state
         }
     }
 
-    // Expose user state as LiveData for observers
+    // Expose the user state as LiveData so it can be observed by the UI
     public LiveData<FirebaseUser> getUserState()
     {
         return userState;
     }
 
-    // Expose loading state as LiveData for observers
+    // Expose the loading state as LiveData so it can be observed by the UI
     public LiveData<Boolean> getLoadingState()
     {
         return loadingState;
     }
 
-    // Expose error state as LiveData for observers
+    // Expose the error state as LiveData so it can be observed by the UI
     public LiveData<String> getErrorState()
     {
         return errorState;
     }
 
-    // Check if data needs to be loaded and trigger the repository to load it
+    // Check if any additional data needs to be loaded and trigger the repository to handle it
     public void checkAndLoadData()
     {
-        loadingState.setValue(true); // Start loading
-        repository.checkAndLoadData(loadingState, errorState);
+        loadingState.setValue(true);  // Indicate that a loading process has started
+        repository.checkAndLoadData(loadingState, errorState); // Use the repository to load required data
     }
 }
