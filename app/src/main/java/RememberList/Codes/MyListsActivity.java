@@ -114,6 +114,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         } else if (view == sharelists) {
             // Navigate to SharedListsActivity
             Intent intent = new Intent(this, SharedListsActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear the activity stack
             startActivity(intent);
         } else if (view == signOutButton) {
             // Handle sign-out

@@ -334,7 +334,6 @@ public class Repository
             {
                 editor1.putString(String.valueOf(i), lists.get(i));
             }
-
             editor2.apply();
             editor1.apply();
 
