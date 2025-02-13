@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background"
     android:orientation="vertical">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+
         <ImageButton
             android:id="@+id/back"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:src="@drawable/back" />
+
         <TextView
             android:id="@+id/title"
             android:layout_width="280dp"
@@ -21,15 +25,17 @@
             android:gravity="center"
             android:text="רשימות ששותפו"
             android:textSize="18dp" />
+
         <ImageButton
             android:id="@+id/refresh"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/background"
             android:src="@drawable/refresh" />
-</LinearLayout>
 
-<TextView
+    </LinearLayout>
+
+    <TextView
         android:id="@+id/text2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -48,9 +54,6 @@
         android:layout_alignParentStart="true" />
 
     <!-- Search EditText -->
-
-    <!-- ProgressBar -->
-
     <EditText
         android:id="@+id/editText"
         android:layout_width="match_parent"
@@ -62,6 +65,7 @@
         android:backgroundTint="#d8000000"
         android:hint="חפש לפי שם" />
 
+    <!-- ProgressBar -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -72,7 +76,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp" />
 
-    <!-- ListView -->
+    <!-- Main ListView showing shared lists -->
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"

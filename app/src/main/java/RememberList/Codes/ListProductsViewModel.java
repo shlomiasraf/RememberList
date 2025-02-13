@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,28 +13,29 @@ import java.util.List;
 public class ListProductsViewModel extends AndroidViewModel {
 
     private final Repository repository; // Repository to manage data operations
-    private final MutableLiveData<List<Product>> products = new MutableLiveData<>(); // LiveData for the list of products
+    private final MutableLiveData<List<Product>> productsLiveData = new MutableLiveData<>(); // LiveData for the list of products
     private final MutableLiveData<Boolean> loadingLiveData = new MutableLiveData<>(); // LiveData for the loading state
     private final MutableLiveData<String> errorLiveData = new MutableLiveData<>(); // LiveData for error messages
     private String listName; // The name of the list being managed
-
+    private String listKey; // The key of the list being managed
     /**
      * ViewModel for managing and interacting with a list of products.
      * Provides data to the UI and handles interactions with the repository.
      */
-    public ListProductsViewModel(@NonNull Application application)
-    {
+    public ListProductsViewModel(@NonNull Application application) {
         super(application);
         repository = new Repository(application); // Initialize the repository
     }
 
     /**
      * Initializes the ViewModel with the name of the list to manage.
+     *
      * @param listName the name of the list
      */
-    public void init(String listName)
+    public void init(String listName, String listKey)
     {
         this.listName = listName;
+        this.listKey = listKey;
         loadProducts(); // Load products from the repository
     }
 
@@ -42,95 +44,100 @@ public class ListProductsViewModel extends AndroidViewModel {
      */
     private void loadProducts()
     {
-        loadingLiveData.setValue(true); // Indicate that data loading has started
+        loadingLiveData.setValue(true); // Indicate loading started
         try
         {
-            List<String> items = repository.getValues(listName); // Retrieve raw data
-            List<Product> productList = new ArrayList<>();
-            for (String item : items)
-            {
-                productList.add(new Product(item, false)); // Convert raw data into Product objects
-            }
-            products.setValue(productList); // Update LiveData with the list of products
+            repository.getValues("UserValues" ,(listName+listKey) ,productsLiveData, loadingLiveData, errorLiveData);
         }
         catch (Exception e)
         {
-            errorLiveData.setValue("Failed to load products: " + e.getMessage()); // Handle errors
+            errorLiveData.setValue("Failed to load lists: " + e.getMessage()); // Set error message
         }
-        loadingLiveData.setValue(false); // Indicate that data loading has completed
+        loadingLiveData.setValue(false); // Indicate loading finished
     }
 
     /**
      * Returns LiveData for the list of products.
+     *
      * @return LiveData containing the list of products
      */
     public LiveData<List<Product>> getProducts()
     {
-        return products;
+        return productsLiveData;
     }
 
     /**
      * Returns LiveData for the loading state.
+     *
      * @return LiveData containing the loading state
      */
-    public LiveData<Boolean> getLoadingLiveData()
-    {
+    public LiveData<Boolean> getLoadingLiveData() {
         return loadingLiveData;
     }
 
     /**
      * Returns LiveData for error messages.
+     *
      * @return LiveData containing error messages
      */
-    public LiveData<String> getErrorLiveData()
-    {
+    public LiveData<String> getErrorLiveData() {
         return errorLiveData;
     }
 
     /**
      * Adds a new product to the list and updates the repository.
+     *
      * @param productName the name of the product to add
      */
-    public void addProduct(String listName,String productName)
+    public void addProduct(String productName)
     {
-        loadingLiveData.setValue(true); // Indicate that an operation is in progress
-        try
-        {
-            repository.addValue(listName, productName, errorLiveData); // Add the product to the repository
-            loadProducts(); // Reload products to reflect changes
-        }
-        catch (Exception e)
-        {
-            errorLiveData.setValue("Failed to add product: " + e.getMessage()); // Handle errors
-        }
-        loadingLiveData.setValue(false); // Indicate that the operation has completed
+        loadingLiveData.setValue(true); // Set loading state to true
+        repository.addValue((listName+listKey), productName, loadingLiveData, errorLiveData); // Add the product to the repository
+        // Observe the loading state and reload the lists after the add operation completes
+        loadingLiveData.observeForever(new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean isLoading)
+            {
+                if (Boolean.FALSE.equals(isLoading))
+                {
+                    // Load the lists only after the add operation completes
+                    loadProducts();
+                    // Remove the observer to avoid memory leaks
+                    loadingLiveData.removeObserver(this);
+                }
+            }
+        });
     }
 
     /**
      * Deletes selected products from the list and updates the repository.
+     *
      * @param selectedProducts the list of products to delete
      */
     public void deleteProducts(List<Product> selectedProducts)
     {
-        loadingLiveData.setValue(true); // Indicate that an operation is in progress
-        try
+        loadingLiveData.setValue(true); // Set loading state to true
+        // Reverse loop to avoid index shifting issues
+        int[] indexes = new int[selectedProducts.size()];
+        for (int i = 0; i < selectedProducts.size(); i++)
         {
-            // Reverse loop to avoid index shifting issues
-            for (int i = 0; i < selectedProducts.size(); i++)
+            Product product = selectedProducts.get(i);
+            indexes[i] = productsLiveData.getValue() != null ? productsLiveData.getValue().indexOf(product) : -1;
+        }
+        repository.deleteValues((listName+listKey), indexes,loadingLiveData, errorLiveData); // Delete the products from the repository
+        // Observe the loading state and reload the lists after the add operation completes
+        loadingLiveData.observeForever(new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean isLoading)
             {
-                Product product = selectedProducts.get(i);
-                int index = products.getValue() != null ? products.getValue().indexOf(product) : -1;
-                if (index >= 0)
+                if (Boolean.FALSE.equals(isLoading))
                 {
-                    repository.deleteValue(listName, index-i, errorLiveData); // Delete the product from the repository
+                    // Load the lists only after the add operation completes
+                    loadProducts();
+                    // Remove the observer to avoid memory leaks
+                    loadingLiveData.removeObserver(this);
                 }
             }
-            loadProducts(); // Reload products to reflect changes
-        }
-        catch (Exception e)
-        {
-            errorLiveData.setValue("Failed to delete products: " + e.getMessage()); // Handle errors
-        }
-        loadingLiveData.setValue(false); // Indicate that the operation has completed
+        });
     }
 }

@@ -26,6 +26,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
     private ListView lvMain; // ListView for displaying products
     private ArrayList<Product> selectedProducts = new ArrayList<>(); // List to hold selected products for deletion
     private String listName; // The name of the list being managed
+    private String listKey; // The key of the list being managed
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -44,16 +45,16 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(ListProductsViewModel.class);
         listName = getIntent().getStringExtra("LIST_NAME"); // Get the list name passed via Intent
+        listKey = getIntent().getStringExtra("LIST_KEY"); // Get the key of the list passed via Intent
         TextView title = findViewById(R.id.textview);
         title.setText(listName);
-        viewModel.init(listName); // Initialize ViewModel with the list name
-
+        viewModel.init(listName,listKey); // Initialize ViewModel with the list name
         // Observe products LiveData to update the UI when data changes
         viewModel.getProducts().observe(this, products ->
         {
-            if (products != null)
+            if (products != null && !products.get(0).name.equals(""))
             {
-                boxAdapter = new ListAdapter(ListProductsActivity.this, new ArrayList<>(products)); // Ensure a fresh ArrayList
+                boxAdapter = new ListAdapter(ListProductsActivity.this, new ArrayList<>(products),true); // Ensure a fresh ArrayList
                 lvMain.setAdapter(boxAdapter); // Set the adapter for the ListView
             }
         });
@@ -73,7 +74,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
             String productName = editText.getText().toString().trim();
             if (!productName.isEmpty())
             {
-                viewModel.addProduct(listName, productName); // Add product via ViewModel
+                viewModel.addProduct(productName); // Add product via ViewModel
                 editText.setText(""); // Clear the input field
                 Toast.makeText(this, "Product added", Toast.LENGTH_SHORT).show(); // Show confirmation
             }

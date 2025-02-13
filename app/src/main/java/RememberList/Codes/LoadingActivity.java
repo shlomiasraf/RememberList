@@ -40,9 +40,6 @@ public class LoadingActivity extends AppCompatActivity
 				}
 			}
 		});
-
-		// Trigger data loading or checks if needed
-		viewModel.checkAndLoadData();
 	}
 
 	// Navigate to the main screen (MyListsActivity) when the user is authenticated

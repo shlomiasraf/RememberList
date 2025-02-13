@@ -21,7 +21,7 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
     private SharedListsProductsViewModel viewModel; // ViewModel instance
     private ListView contentListView; // ListView for displaying content
     private ArrayAdapter<String> adapter; // Adapter for ListView
-    private ArrayList<String> contentList; // Data list for the adapter
+    private ArrayList<String> valuesList; // Data list for the adapter
     private ProgressBar progressBar; // ProgressBar for loading indicator
 
     @Override
@@ -33,29 +33,34 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
         contentListView = findViewById(R.id.contentListView);
         progressBar = findViewById(R.id.progressBar);
 
-        contentList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, contentList);
+        valuesList = new ArrayList<>();
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, valuesList);
         contentListView.setAdapter(adapter);
 
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(SharedListsProductsViewModel.class);
         TextView title = findViewById(R.id.title);
         // Get the list ID passed from the previous activity
-        String listId = getIntent().getStringExtra("LIST_ID");
-        String listTitle = getIntent().getStringExtra("LIST_NAME");
-        title.setText(listTitle);
+        String listName = getIntent().getStringExtra("LIST_NAME");
+        String listKey = getIntent().getStringExtra("LIST_KEY");
+        title.setText(listName);
 
         // Validate that a valid list ID was received
-        if (listId == null || listId.isEmpty()) {
+        if (listKey == null || listKey.isEmpty())
+        {
             Toast.makeText(this, "Unable to display content - Missing list ID", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
         // Observe LiveData for content updates
-        viewModel.getContentLiveData().observe(this, content -> {
-            contentList.clear(); // Clear current data
-            contentList.addAll(content); // Add new data
+        viewModel.init(listName,listKey);
+                viewModel.getProducts().observe(this, values -> {
+            valuesList.clear(); // Clear current data
+            for (Product value: values)
+            {
+                valuesList.add(value.name);
+            }
             adapter.notifyDataSetChanged(); // Update ListView
         });
 
@@ -65,7 +70,7 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
         });
 
         // Fetch content for the specified list ID
-        viewModel.fetchContent(listId);
+        viewModel.getProducts();
         findViewById(R.id.back).setOnClickListener(this);
     }
     @Override

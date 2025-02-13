@@ -15,23 +15,19 @@ import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
 
-
 public class MyListsActivity extends AppCompatActivity implements View.OnClickListener {
 
     private MyListsViewModel viewModel; // ViewModel instance
     private ArrayAdapter<String> adapter; // Adapter to display the lists
     private ListView list; // ListView for displaying lists
-    private EditText editText; // EditText for input
-    private Button sharelists, add, signOutButton, recordButton; // Buttons for actions
-    private String selectedList; // Selected list for deletion
-    private int selectedPosition; // Selected position for deletion
+    private EditText editText; // EditText for user input
+    private Button sharelists, add, signOutButton; // Buttons for actions
+    private String selectedList; // Currently selected list for deletion
 
-    //Bundle savedInstanceState parameter in the onCreate method of an Android activity
-    // is used to save and restore the state of the activity.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);// Call the superclass onCreate method to initialize the activity
-        setContentView(R.layout.activity_mylists);// Set the layout for this activity
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_mylists);
 
         // Initialize UI elements
         add = findViewById(R.id.add);
@@ -43,45 +39,63 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(MyListsViewModel.class);
 
-        //Sets up an ArrayAdapter to manage and display a list of items in the ListView.
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>());
-        list.setAdapter(adapter);//Sets the created ArrayAdapter as the adapter for the ListView named list.
-        //The adapter bridges the data (the list of strings) and the ListView, ensuring the data is displayed properly.
-
-        // Observe the lists LiveData from the ViewModel
-        viewModel.getLists().observe(this, lists -> {
-            adapter.clear();
-            if (lists != null) {
-                adapter.addAll(lists);
+        // Observe error messages to display them as Toast messages
+        viewModel.getErrorLiveData().observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
             }
-            //Ensures the ListView reflects the updated data after the LiveData change is observed and processed.
-            adapter.notifyDataSetChanged();
         });
 
-        // Set click listeners
+        // Observe loading state and trigger actions accordingly
+        viewModel.getLoadingLiveData().observe(this, isLoading ->
+        {
+            if (Boolean.TRUE.equals(isLoading))
+            {
+                // Optional: Show a loading indicator here
+                Toast.makeText(this, "Loading data...", Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                // Observe and load the lists when loading completes
+                viewModel.getLists().observe(this, lists -> {
+                    adapter.clear();
+                    if (lists != null) {
+                        adapter.addAll(lists);
+                    }
+                    adapter.notifyDataSetChanged(); // Refresh ListView
+                });
+            }
+        });
+
+        // Trigger data loading or initial checks
+        viewModel.checkAndLoadData();
+
+        // Setup the ArrayAdapter for the ListView
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>());
+        list.setAdapter(adapter);
+
+        // Setup click and long-click listeners for the ListView
+        setupListClickListeners();
+
+        // Set click listeners for action buttons
         add.setOnClickListener(this);
         sharelists.setOnClickListener(this);
         signOutButton.setOnClickListener(this);
-
-        // Handle list item clicks
-        setupListClickListeners();
-
     }
 
-
     private void setupListClickListeners() {
-        // Navigate to ListProductsActivity on item click
+        // Handle item clicks to navigate to another activity
         list.setOnItemClickListener((parent, view, position, id) -> {
             selectedList = adapter.getItem(position);
             Intent intent = new Intent(this, ListProductsActivity.class);
-            intent.putExtra("LIST_NAME", selectedList); // Pass the list name
+            intent.putExtra("LIST_NAME", selectedList); // Pass the list name to the next activity
+            intent.putExtra("LIST_KEY", String.valueOf(position));
             startActivity(intent);
         });
 
-        // Show delete confirmation dialog on long click
+        // Handle long item clicks to show a delete confirmation dialog
         list.setOnItemLongClickListener((parent, view, position, id) -> {
             selectedList = adapter.getItem(position);
-            selectedPosition = position;
             showDeleteConfirmationDialog();
             return true;
         });
@@ -102,36 +116,37 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     public void onClick(View view) {
-        if (view == add) {
+        if (view == add)
+        {
+            // Add a new list
             String listName = editText.getText().toString().trim();
             if (!listName.isEmpty()) {
-                viewModel.addList(listName); // Add the list using ViewModel
-                editText.setText(""); // Clear input
-                Toast.makeText(this, "New list created", Toast.LENGTH_SHORT).show();
-            } else {
+                viewModel.addList(listName); // Add list
+                editText.setText(""); // Clear the input field
+            }
+            else
+            {
                 Toast.makeText(this, "List name cannot be empty", Toast.LENGTH_SHORT).show();
             }
-        } else if (view == sharelists) {
+        }
+        else if (view == sharelists)
+        {
             // Navigate to SharedListsActivity
             Intent intent = new Intent(this, SharedListsActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear the activity stack
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear activity stack
             startActivity(intent);
         } else if (view == signOutButton) {
-            // Handle sign-out
+            // Handle user sign-out
             handleSignOut();
         }
-
     }
 
     private void handleSignOut() {
-        // Call the logout function from the repository
-        viewModel.logout(); // Assuming the ViewModel has a logout method that calls repository.logout()
-
-        // Redirect to LoginActivity
+        // Perform sign-out and navigate to LoginActivity
+        viewModel.logout();
         Intent intent = new Intent(this, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear the activity stack
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear activity stack
         startActivity(intent);
-
         Toast.makeText(this, "Signed out successfully", Toast.LENGTH_SHORT).show();
     }
 }

@@ -27,8 +27,9 @@ public class UnitTests {
 
         Repository repository = new Repository(contextMock);
         MutableLiveData<String> errorLiveData = new MutableLiveData<>();
+        MutableLiveData<Boolean> loadingLiveData = new MutableLiveData<>();
 
-        repository.addList("Shopping List", errorLiveData);
+        repository.addList("Shopping List",loadingLiveData, errorLiveData);
 
         Mockito.verify(editorMock).putString(Mockito.anyString(), Mockito.eq("Shopping List"));
         Mockito.verify(editorMock).apply();
@@ -55,9 +56,10 @@ public class UnitTests {
 
         Repository repository = new Repository(contextMock);
         MutableLiveData<String> errorLiveData = new MutableLiveData<>();
+        MutableLiveData<Boolean> loadingLiveData = new MutableLiveData<>();
 
         // Call addValue
-        repository.addValue("TestKey", "TestValue", errorLiveData);
+        repository.addValue("TestKey", "TestValue", loadingLiveData, errorLiveData);
 
         // Verify: Ensure the value was added with the correct key
         Mockito.verify(editorMock).putString(Mockito.eq("TestKey1"), Mockito.eq("TestValue"));
@@ -85,13 +87,14 @@ public class UnitTests {
 
         Repository repository = new Repository(contextMock);
         MutableLiveData<String> errorLiveData = new MutableLiveData<>();
+        MutableLiveData<Boolean> loadingLiveData = new MutableLiveData<>();
 
         // Step 1: Add a list
-        repository.addList("Shopping List", errorLiveData);
+        repository.addList("Shopping List",loadingLiveData, errorLiveData);
         Mockito.verify(editorMock).putString(Mockito.anyString(), Mockito.eq("Shopping List"));
 
         // Step 2: Delete the list
-        repository.deleteList("Shopping List", errorLiveData);
+        repository.deleteList("Shopping List", loadingLiveData, errorLiveData);
 
         // Verify: Ensure remove() was called for the correct keys
         Mockito.verify(editorMock).remove("Shopping List1");

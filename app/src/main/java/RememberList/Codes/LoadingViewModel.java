@@ -81,10 +81,4 @@ public class LoadingViewModel extends ViewModel
         return errorState;
     }
 
-    // Check if any additional data needs to be loaded and trigger the repository to handle it
-    public void checkAndLoadData()
-    {
-        loadingState.setValue(true);  // Indicate that a loading process has started
-        repository.checkAndLoadData(loadingState, errorState); // Use the repository to load required data
-    }
 }

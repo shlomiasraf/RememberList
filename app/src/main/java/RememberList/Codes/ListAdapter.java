@@ -22,17 +22,19 @@ public class ListAdapter extends BaseAdapter
     LayoutInflater lInflater;  // Inflater to create views from XML layouts
     ArrayList<Product> objects;  // List of products to display
     ArrayList<TextView> arr;  // Array list to hold TextView references
-    RecyclerView.ViewHolder holder;  // Holder for RecyclerView (though not used here)
-
+    // <-- Add a field to control strike-through
+    private boolean enableStrikeThrough;
     // Constructor to initialize the adapter with context and product list
-    ListAdapter(Context context, ArrayList<Product> products)
+    public ListAdapter(Context context, ArrayList<Product> products, boolean enableStrikeThrough)
     {
         ctx = context;
         objects = products;
-        arr = new ArrayList<TextView>();  // Initialize TextView list
-        lInflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);  // Get LayoutInflater
-    }
+        arr = new ArrayList<>();
+        lInflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
+        // Save the parameter
+        this.enableStrikeThrough = enableStrikeThrough;
+    }
     // Returns the total number of items in the list
     @Override
     public int getCount() {
@@ -85,19 +87,21 @@ public class ListAdapter extends BaseAdapter
     // CheckBox state change listener to update the product's box status and apply strike-through to the TextView
     OnCheckedChangeListener myCheckChangList = new OnCheckedChangeListener()
     {
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            // Update the product's box status based on the CheckBox state
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+        {
             getProduct((Integer) buttonView.getTag()).box = isChecked;
 
-            // Find the parent row (View) that contains the CheckBox
-            View row = (View) buttonView.getParent();
-            TextView textView = (TextView) row.findViewById(R.id.tvDescr);  // Get the TextView for the product
+            // Only apply or remove strike-through if enabled
+            if (enableStrikeThrough) {
+                // Find the parent row (View) that contains the CheckBox
+                View row = (View) buttonView.getParent();
+                TextView textView = (TextView) row.findViewById(R.id.tvDescr);
 
-            // Apply or remove the strike-through effect based on the CheckBox state
-            if (isChecked) {
-                textView.setPaintFlags(textView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);  // Strike-through if checked
-            } else {
-                textView.setPaintFlags(textView.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));  // Remove strike-through if unchecked
+                if (isChecked) {
+                    textView.setPaintFlags(textView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                } else {
+                    textView.setPaintFlags(textView.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+                }
             }
         }
     };
