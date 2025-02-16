@@ -173,7 +173,8 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         viewModel.loadCategories();
     }
 
-    public void showAddCategoryDialog(List<String> categories, AlertDialog parentDialog) {
+    public void showAddCategoryDialog(List<String> categories, AlertDialog parentDialog)
+    {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("הוסף קטגוריה");
 
@@ -181,18 +182,21 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         input.setHint("הכנס שם");
         builder.setView(input);
 
-        builder.setPositiveButton("הוסף", (dialog, which) -> {
+        builder.setPositiveButton("הוסף", (dialog, which) ->
+        {
             String categoryName = input.getText().toString().trim();
-            if (!categoryName.isEmpty() && !categories.contains(categoryName)) {
+            if (!categoryName.isEmpty() && !categories.contains(categoryName))
+            {
                 viewModel.addCategory(categoryName);
                 Toast.makeText(this, "Category added successfully", Toast.LENGTH_SHORT).show();
                 parentDialog.dismiss(); // Refresh parent dialog
                 showCategoryDialog();
-            } else {
+            }
+            else
+            {
                 Toast.makeText(this, "Category already exists or name is empty", Toast.LENGTH_SHORT).show();
             }
         });
-
         builder.setNegativeButton("ביטול", (dialog, which) -> dialog.dismiss());
         builder.show();
     }

@@ -54,7 +54,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         {
             if (products != null && !products.get(0).name.equals(""))
             {
-                boxAdapter = new ListAdapter(ListProductsActivity.this, new ArrayList<>(products),true); // Ensure a fresh ArrayList
+                boxAdapter = new ListAdapter(ListProductsActivity.this, listName+listKey, new ArrayList<>(products),true); // Ensure a fresh ArrayList
                 lvMain.setAdapter(boxAdapter); // Set the adapter for the ListView
             }
         });

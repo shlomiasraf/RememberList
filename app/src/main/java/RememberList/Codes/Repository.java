@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Repository {
 
@@ -20,8 +21,7 @@ public class Repository {
     // Firebase Realtime Database reference (pointing to the "Posts" node)
     private final DatabaseReference databaseReference;
     // Map to store list IDs (or keys) to titles (for filtering, etc.)
-    private final HashMap<String, String> listIdToTitleMap = new HashMap<>();
-    // Application context for accessing assets
+
     private final Context context;
     public Repository(Context context)
     {
@@ -215,7 +215,10 @@ public class Repository {
                 DatabaseReference listValuesRef = getValuesRef().child(list2[0]+String.valueOf(i));
                 for (int j = 1; j < list2.length; j++)
                 {
-                    listValuesRef.child(String.valueOf(j-1)).setValue(list2[j]);
+                    Map<String, Object> valueWithBoolean = new HashMap<>();
+                    valueWithBoolean.put("value", list2[j]);
+                    valueWithBoolean.put("isChecked", false);
+                    listValuesRef.child(String.valueOf(j-1)).setValue(valueWithBoolean);
                 }
             }
         } catch (Exception e) {
@@ -330,7 +333,8 @@ public class Repository {
             getValuesRef = getValuesRef();
         }
 
-        getValuesRef.child(keyPrefix).addListenerForSingleValueEvent(new ValueEventListener() {
+        getValuesRef.child(keyPrefix).addListenerForSingleValueEvent(new ValueEventListener()
+        {
             @Override
             public void onDataChange(DataSnapshot snapshot)
             {
@@ -338,10 +342,11 @@ public class Repository {
                 // Iterate over each child in the node
                 for (DataSnapshot child : snapshot.getChildren())
                 {
-                    String value = child.getValue(String.class);
-                    if (value != null)
+                    String value = child.child("value").getValue(String.class);
+                    Boolean isChecked = child.child("isChecked").getValue(Boolean.class);
+                    if (value != null && isChecked != null)
                     {
-                        values.add(new Product(value,false));
+                        values.add(new Product(value, isChecked));
                     }
                 }
                 // Update the LiveData with the fetched values
@@ -686,7 +691,10 @@ public class Repository {
         });
     }
 
-
+    public void ChangeProductBox(Product product,int position, String keyPrefix)
+    {
+        getValuesRef().child(keyPrefix).child(String.valueOf(position)).child("isChecked").setValue(product.isChecked());
+    }
 
     public DatabaseReference getListsRef()
     {
