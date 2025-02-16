@@ -382,7 +382,10 @@ public class Repository {
                 public void onDataChange(DataSnapshot snapshot) {
                     long count = snapshot.getChildrenCount();
                     // Next index = count + 1 (assuming keys start at 1)
-                    getValuesRef().child(listName + String.valueOf(count)).child(String.valueOf(0)).setValue("");
+                    Map<String, Object> valueWithBoolean = new HashMap<>();
+                    valueWithBoolean.put("value", "");
+                    valueWithBoolean.put("isChecked", false);
+                    getValuesRef().child(listName + String.valueOf(count)).child(String.valueOf(0)).setValue(valueWithBoolean);
                     getListsRef.child(String.valueOf(count)).setValue(listName)
                             .addOnSuccessListener(unused -> {
                                 // Set loading state to false after the operation is successful
@@ -428,18 +431,22 @@ public class Repository {
             // Determine the next available index by reading the current children count
             listValuesRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
-                public void onDataChange(DataSnapshot snapshot) {
+                public void onDataChange(DataSnapshot snapshot)
+                {
                     long count = snapshot.getChildrenCount();
                     // Next index = count + 1 (assuming keys start at 1)
                     if(count == 1)
                     {
                         DataSnapshot child = snapshot.getChildren().iterator().next();
-                        if (child.getValue() != null && child.getValue().equals(""))
+                        if (child.getValue() != null && child.child("value").getValue().equals(""))
                         {
                             count = 0;
                         }
                     }
-                    listValuesRef.child(String.valueOf(count)).setValue(value);
+                    Map<String, Object> valueWithBoolean = new HashMap<>();
+                    valueWithBoolean.put("value", value);
+                    valueWithBoolean.put("isChecked", false);
+                    listValuesRef.child(String.valueOf(count)).setValue(valueWithBoolean);
                     // Set loading state to false after the operation is successful
                     loadingLiveData.setValue(false);
                 }

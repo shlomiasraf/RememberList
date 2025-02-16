@@ -135,11 +135,11 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
                 });
 
                 // Neutral button for adding a category
-                builder.setNeutralButton("הוסף", null);
+                builder.setNeutralButton("הוסף קטגוריה", null);
 
                 // Neutral button for deleting a category
-                builder.setNegativeButton("מחק", null);
-
+                builder.setNeutralButton("מחק", null);
+                builder.setNegativeButton("ביטול", (dialog, which) -> dialog.dismiss()); // Cancel button
                 AlertDialog dialog = builder.create();
                 dialog.show();
 
