@@ -66,11 +66,6 @@ public class SharedListsProductsViewModel extends AndroidViewModel {
         }
         loadingLiveData.setValue(false); // Indicate loading finished
     }
-    /**
-     * Adds a new list to the repository and reloads lists.
-     *
-     * @param listName The name of the list to add.
-     */
     public void saveListToUser(String listName,String keyPrefix, ArrayList<String> valuesList)
     {
         loadingLiveData.setValue(true); // Set loading state to true
