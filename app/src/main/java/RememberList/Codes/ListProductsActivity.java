@@ -83,6 +83,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         findViewById(R.id.add).setOnClickListener(this);
         findViewById(R.id.delete).setOnClickListener(this);
         findViewById(R.id.back).setOnClickListener(this);
+        findViewById(R.id.share).setOnClickListener(this);
 
 
 
@@ -118,6 +119,10 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
             // Navigate back to MyListsActivity
             Intent intent = new Intent(this, MyListsActivity.class);
             startActivity(intent);
+        }
+        else if (view.getId() == R.id.share)
+        {
+            //Add list to shared lists:
         }
     }
 
