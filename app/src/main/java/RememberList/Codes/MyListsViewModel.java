@@ -114,12 +114,12 @@ public class MyListsViewModel extends AndroidViewModel {
      *
      * @param listName The name of the list to delete.
      */
-    public void deleteList(String listName)
+    public void deleteList(String listName,String key)
     {
         loadingLiveData.setValue(true); // Set loading state to true
 
         // Add the list to the repository
-        repository.deleteList(listName, loadingLiveData, errorLiveData);
+        repository.deleteList(listName, key, loadingLiveData, errorLiveData);
 
         // Observe the loading state and reload the lists after the add operation completes
         loadingLiveData.observeForever(new Observer<Boolean>() {
