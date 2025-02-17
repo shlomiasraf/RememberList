@@ -92,7 +92,9 @@ public class ListProductsViewModel extends AndroidViewModel {
     public void addProduct(String productName)
     {
         loadingLiveData.setValue(true); // Set loading state to true
-        repository.addValue((listName+listKey), productName, loadingLiveData, errorLiveData); // Add the product to the repository
+        ArrayList<String> valuesToAdd = new ArrayList<>();
+        valuesToAdd.add(productName);
+        repository.addValues((listName+listKey), valuesToAdd, loadingLiveData, errorLiveData); // Add the product to the repository
         // Observe the loading state and reload the lists after the add operation completes
         loadingLiveData.observeForever(new Observer<Boolean>() {
             @Override
