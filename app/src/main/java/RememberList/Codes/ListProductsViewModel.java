@@ -142,4 +142,24 @@ public class ListProductsViewModel extends AndroidViewModel {
             }
         });
     }
+
+    public void shareList(String listName, ArrayList<String> valuesList,ArrayList<String> categories)
+    {
+        loadingLiveData.setValue(true); // Set loading state to true
+
+        // Add the list to the repository
+        repository.addSharedList(listName, categories, valuesList, loadingLiveData, errorLiveData);
+        // Observe the loading state and reload the lists after the add operation completes
+        loadingLiveData.observeForever(new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean isLoading) {
+                if (Boolean.FALSE.equals(isLoading)) {
+                    // Remove the observer to avoid memory leaks
+                    loadingLiveData.removeObserver(this);
+                }
+            }
+        });
+    }
+
+
 }
