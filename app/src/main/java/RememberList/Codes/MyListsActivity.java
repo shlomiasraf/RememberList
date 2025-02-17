@@ -23,6 +23,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
     private EditText editText; // EditText for user input
     private Button sharelists, add, signOutButton; // Buttons for actions
     private String selectedList; // Currently selected list for deletion
+    private int positionToDelete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,17 +97,20 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         // Handle long item clicks to show a delete confirmation dialog
         list.setOnItemLongClickListener((parent, view, position, id) -> {
             selectedList = adapter.getItem(position);
+            positionToDelete = position;
             showDeleteConfirmationDialog();
             return true;
         });
     }
 
-    private void showDeleteConfirmationDialog() {
+    private void showDeleteConfirmationDialog()
+    {
         new AlertDialog.Builder(this)
                 .setMessage("Are you sure you want to delete this list? Once deleted, it cannot be recovered.")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    if (selectedList != null) {
-                        viewModel.deleteList(selectedList); // Delete the list using ViewModel
+                    if (selectedList != null)
+                    {
+                        viewModel.deleteList(selectedList,String.valueOf(positionToDelete)); // Delete the list using ViewModel
                         Toast.makeText(this, "List deleted", Toast.LENGTH_SHORT).show();
                     }
                 })
@@ -133,6 +137,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         {
             // Navigate to SharedListsActivity
             Intent intent = new Intent(this, SharedListsActivity.class);
+            intent.putExtra("LIST_COUNT", String.valueOf(adapter.getCount()));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear activity stack
             startActivity(intent);
         } else if (view == signOutButton) {
