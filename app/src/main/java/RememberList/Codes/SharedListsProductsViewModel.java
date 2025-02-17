@@ -5,7 +5,9 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SharedListsProductsViewModel extends AndroidViewModel {
@@ -64,4 +66,29 @@ public class SharedListsProductsViewModel extends AndroidViewModel {
         }
         loadingLiveData.setValue(false); // Indicate loading finished
     }
+    /**
+     * Adds a new list to the repository and reloads lists.
+     *
+     * @param listName The name of the list to add.
+     */
+    public void saveListToUser(String listName,String keyPrefix, ArrayList<String> valuesList)
+    {
+        loadingLiveData.setValue(true); // Set loading state to true
+
+        // Add the list to the repository
+        repository.addList(listName, loadingLiveData, errorLiveData);
+
+        repository.addValues(keyPrefix, valuesList, loadingLiveData, errorLiveData);
+        // Observe the loading state and reload the lists after the add operation completes
+        loadingLiveData.observeForever(new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean isLoading) {
+                if (Boolean.FALSE.equals(isLoading)) {
+                    // Remove the observer to avoid memory leaks
+                    loadingLiveData.removeObserver(this);
+                }
+            }
+        });
+    }
+
 }
