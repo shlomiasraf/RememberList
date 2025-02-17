@@ -581,7 +581,8 @@ public class Repository {
         loadingLiveData.setValue(true);
         DatabaseReference listValuesRef = getValuesRef().child(keyPrefix);
         // Remove the values at the given indexes
-        for (int i = 0; i < indexes.length; i++) {
+        for (int i = 0; i < indexes.length; i++)
+        {
             listValuesRef.child(String.valueOf(indexes[i])).removeValue();
         }
 
@@ -590,22 +591,26 @@ public class Repository {
             @Override
             public void onDataChange(DataSnapshot snapshot)
             {
-                if (snapshot.exists()) {
+                if (snapshot.exists())
+                {
                     int counter = 0; // Keeps track of how many gaps exist (null values)
 
                     // Iterate through the remaining items
-                    for (int i = indexes[0]; i < snapshot.getChildrenCount() + indexes.length; i++) {
-                        String thisValue = snapshot.child(String.valueOf(i)).getValue(String.class);
-
-                        if (thisValue == null)
+                    for (int i = indexes[0]; i < snapshot.getChildrenCount() + indexes.length; i++)
+                    {
+                        String value = snapshot.child(String.valueOf(i)).child("value").getValue(String.class);
+                        if (value == null)
                         {
                             // Increment the counter for null (deleted) values
                             counter++;
                         }
                         else
                         {
+                            Map<String, Object> valueWithBoolean = new HashMap<>();
+                            valueWithBoolean.put("value", value);
+                            valueWithBoolean.put("isChecked", snapshot.child(String.valueOf(i)).child("isChecked").getValue(Boolean.class));
                             // Move the current value to fill the gap
-                            listValuesRef.child(String.valueOf(i - counter)).setValue(thisValue);
+                            listValuesRef.child(String.valueOf(i - counter)).setValue(valueWithBoolean);
                             // Remove the old key to avoid duplicates
                             listValuesRef.child(String.valueOf(i)).removeValue();
                         }
