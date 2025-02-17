@@ -342,8 +342,17 @@ public class Repository {
                 // Iterate over each child in the node
                 for (DataSnapshot child : snapshot.getChildren())
                 {
-                    String value = child.child("value").getValue(String.class);
-                    Boolean isChecked = child.child("isChecked").getValue(Boolean.class);
+                    String value;
+                    Boolean isChecked = false;
+                    if(valuesKind.equals("UserValues"))
+                    {
+                        isChecked = child.child("isChecked").getValue(Boolean.class);
+                        value = child.child("value").getValue(String.class);
+                    }
+                    else
+                    {
+                        value = child.getValue(String.class);
+                    }
                     if (value != null && isChecked != null)
                     {
                         values.add(new Product(value, isChecked));
@@ -418,10 +427,10 @@ public class Repository {
      * Values are stored under "values/{listName}" with keys formatted as listName1, listName2, etc.
      *
      * @param keyPrefix The list name (used as the key prefix).
-     * @param value The value to add.
+     * @param valuesList The values to add.
      * @param errorLiveData LiveData to capture error messages.
      */
-    public void addValue(String keyPrefix, String value, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData)
+    public void addValues(String keyPrefix, ArrayList<String> valuesList, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData)
     {
         try
         {
@@ -443,10 +452,15 @@ public class Repository {
                             count = 0;
                         }
                     }
-                    Map<String, Object> valueWithBoolean = new HashMap<>();
-                    valueWithBoolean.put("value", value);
-                    valueWithBoolean.put("isChecked", false);
-                    listValuesRef.child(String.valueOf(count)).setValue(valueWithBoolean);
+                    int i = 0;
+                    for(String value : valuesList)
+                    {
+                        Map<String, Object> valueWithBoolean = new HashMap<>();
+                        valueWithBoolean.put("value", value);
+                        valueWithBoolean.put("isChecked", false);
+                        listValuesRef.child(String.valueOf(count+i)).setValue(valueWithBoolean);
+                        i++;
+                    }
                     // Set loading state to false after the operation is successful
                     loadingLiveData.setValue(false);
                 }
@@ -517,53 +531,37 @@ public class Repository {
      * @param listName The name of the list to delete.
      * @param errorLiveData LiveData to capture error messages.
      */
-    public void deleteList(String listName, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData) {
-        try
-        {
+    public void deleteList(String listName, String key, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData) {
+        try {
             // Set loading state to true before starting the operation
             loadingLiveData.setValue(true);
-            // Remove the list from the "lists" node
-            getListsRef().addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot snapshot)
-                {
-                    for (DataSnapshot child : snapshot.getChildren())
-                    {
-                        String value = child.getValue(String.class);
-                        if (value != null && value.equals(listName))
-                        {
-                            String key = child.getKey();
-                            child.getRef().removeValue()
-                                    .addOnSuccessListener(aVoid ->
-                                    {
-                                        getValuesRef().child((listName+key)).removeValue();
 
-                                        loadingLiveData.setValue(false);
-                                    })
-                                    .addOnFailureListener(e ->
-                                    {
-                                        loadingLiveData.setValue(false);
-                                        errorLiveData.setValue("Failed to delete list: " + e.getMessage());
-
+            // Attempt to remove values from the database
+            getListsRef().child(key).removeValue()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            getValuesRef().child(listName + key).removeValue()
+                                    .addOnCompleteListener(task2 -> {
+                                        if (task2.isSuccessful()) {
+                                            // Success, set loading state to false and clear any errors
+                                            loadingLiveData.setValue(false);
+                                        } else {
+                                            // If removing from getValuesRef() failed, set an error message
+                                            loadingLiveData.setValue(false);
+                                            errorLiveData.setValue("Failed to delete list from values reference.");
+                                        }
                                     });
-                            break;
+                        } else {
+                            // If removing from getListsRef() failed, set an error message
+                            loadingLiveData.setValue(false);
+                            errorLiveData.setValue("Failed to delete list from lists reference.");
                         }
-                    }
-                }
-                @Override
-                public void onCancelled(DatabaseError error)
-                {
-                    loadingLiveData.setValue(false);
-                    errorLiveData.setValue("Failed to access lists: " + error.getMessage());
+                    });
 
-                }
-            });
-        }
-        catch (Exception e)
-        {
-            errorLiveData.setValue("Failed to delete list: " + e.getMessage());
+        } catch (Exception e) {
+            // Handle any unexpected exceptions
             loadingLiveData.setValue(false);
-
+            errorLiveData.setValue("Failed to delete list: " + e.getMessage());
         }
     }
 
