@@ -20,7 +20,7 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
     private EditText searchEditText;
     private Button filterButton;
     private ImageButton backButton, refreshButton;
-
+    private String listsCount;
     // Multiple selected categories
     private List<String> selectedCategories = null;
 
@@ -45,6 +45,7 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
 
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(SharedListsViewModel.class);
+        listsCount = getIntent().getStringExtra("LIST_COUNT");
 
         // Observe loading state
         viewModel.getLoadingLiveData().observe(this, isLoading ->
@@ -79,6 +80,7 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
             Intent intent = new Intent(SharedListsActivity.this, SharedListsProductsActivity.class);
             intent.putExtra("LIST_NAME", selectedList); // Pass the list name
             intent.putExtra("LIST_KEY", String.valueOf(position)); // Add list ID to intent
+            intent.putExtra("LIST_COUNT", listsCount);
             startActivity(intent); // Start Main5Activity
         });
 
