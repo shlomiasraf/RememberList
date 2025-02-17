@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -35,9 +36,16 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
     private String listName; // The name of the list being managed
     private String listKey; // The key of the list being managed
 
+    private String listsCount;
+
+    private ArrayList<String> valuesList; // Data list for the adapter
+
     private boolean notificationSent = false; // Flag to prevent duplicate notifications
 
     private static final String CHANNEL_ID = "test_channel";
+
+
+    private ArrayList<String> categories = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -53,10 +61,14 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         editText = findViewById(R.id.editText);
         lvMain = findViewById(R.id.listView);
 
+        valuesList = new ArrayList<>();
+
+
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(ListProductsViewModel.class);
         listName = getIntent().getStringExtra("LIST_NAME"); // Get the list name passed via Intent
         listKey = getIntent().getStringExtra("LIST_KEY"); // Get the key of the list passed via Intent
+        listsCount = getIntent().getStringExtra("LIST_COUNT");
         TextView title = findViewById(R.id.textview);
         title.setText(listName);
         viewModel.init(listName,listKey); // Initialize ViewModel with the list name
@@ -123,8 +135,89 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         else if (view.getId() == R.id.share)
         {
             //Add list to shared lists:
+            showShareOptionsDialog();
         }
     }
+    private void showCategoryInputDialog() {
+        categories.clear(); // Clear previous selections
+        askForCategory();
+    }
+    private void showShareOptionsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("שיתוף רשימה");
+
+        builder.setItems(new CharSequence[]{"שתף", "בטל"}, (dialog, which) ->
+        {
+            dialog.dismiss(); // Close the first dialog
+            if (which == 0)
+            {
+                showCategoryInputDialog(); // Open the second dialog();
+            }
+            dialog.dismiss();
+        });
+
+        builder.create().show();
+    }
+
+    private void askForCategory() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("בחר קטגוריה לרשימה");
+
+        EditText categoryInput = new EditText(this);
+        categoryInput.setHint("הקלד קטגוריה כאן");
+        builder.setView(categoryInput);
+
+        builder.setPositiveButton("אישור", (dialog, which) -> {
+            String category = categoryInput.getText().toString().trim();
+            if (!category.isEmpty()) {
+                categories.add(category);
+
+                if (categories.size() < 3) {
+                    askToAddAnotherCategory();
+                } else {
+                    shareList(categories); // Max reached, proceed with sharing
+                }
+            } else
+            {
+                Toast.makeText(this, "נא להזין קטגוריה", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("ביטול", (dialog, which) -> {
+            if (!categories.isEmpty()) {
+                shareList(categories);
+            }
+            dialog.dismiss();
+        });
+
+        builder.create().show();
+    }
+
+
+    private void askToAddAnotherCategory() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("האם תרצה להוסיף קטגוריה נוספת?");
+        builder.setMessage("ניתן להוסיף עד 3 קטגוריות.");
+
+        builder.setPositiveButton("כן", (dialog, which) -> askForCategory());
+        builder.setNegativeButton("לא", (dialog, which) -> shareList(categories));
+
+        builder.create().show();
+    }
+
+
+    // Method to share list to shared lists page
+    private void shareList(ArrayList<String> categories)
+    {
+        Toast.makeText(this, "משתף רשימה...", Toast.LENGTH_SHORT).show();
+        for (int i = 0; i < boxAdapter.getCount(); i++)
+        {
+            valuesList.add(boxAdapter.getProduct(i).name);
+        }
+        viewModel.shareList(listName, valuesList, categories);
+    }
+
+
 
 
     /**
