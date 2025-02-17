@@ -32,6 +32,8 @@ public class LoginActivity extends AppCompatActivity
     private Button buttonLogin, buttonRegister;
     private SignInButton buttonGoogleSignIn;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
