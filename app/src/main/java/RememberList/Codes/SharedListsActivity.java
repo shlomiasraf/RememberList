@@ -6,11 +6,10 @@ import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import android.util.Log;
 
 public class SharedListsActivity extends AppCompatActivity implements View.OnClickListener {
     private SharedListsViewModel viewModel;
@@ -59,15 +58,20 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
             {
                 progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
                 // Observe lists data
-                viewModel.getListsLiveData().observe(this, lists ->
+                if(selectedCategories == null)
                 {
-                    // Observe and load the lists when loading completes
-                    adapter.clear();
-                    if (lists != null)
+                    viewModel.getListsLiveData().observe(this, lists ->
                     {
-                        adapter.addAll(lists);
-                    }
-                });
+                        // Observe and load the lists when loading completes
+                        adapter.clear();
+                        if (lists != null)
+                        {
+                            adapter.addAll(lists);
+                        }
+                        Log.d("ObserverCheck", "New observer added in getListsLiveData function");
+                        viewModel.getListsLiveData().removeObservers(this);
+                    });
+                }
             }
         });
         viewModel.getSharedLists();
@@ -103,8 +107,10 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
 
     public void showCategoryDialog()
     {
+        final boolean[] isConfirmed = {false};
         viewModel.getCategoriesLiveData().observe(this, categories ->
         {
+            viewModel.getCategoriesLiveData().removeObservers(this);
             if (categories != null)
             {
                 boolean[] checkedItems = new boolean[categories.size()];
@@ -112,14 +118,27 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("בחר קטגוריות");
-                builder.setMultiChoiceItems(categoryArray, checkedItems, (dialog, which, isChecked) -> {
+                builder.setMultiChoiceItems(categoryArray, checkedItems, (dialog, which, isChecked) ->
+                {
                     if (isChecked)
                     {
-                        if (selectedCategories == null) selectedCategories = new ArrayList<>();
+                        if (selectedCategories == null)
+                        {
+                            selectedCategories = new ArrayList<>();
+                        }
                         if (!selectedCategories.contains(categoryArray[which]))
                         {
                             selectedCategories.add(categoryArray[which]);
                         }
+                        List<String> updatedSelection = new ArrayList<>();
+                        for (int i = 0; i < categoryArray.length; i++) {
+                            if (checkedItems[i])
+                            {
+                                updatedSelection.add(categoryArray[i]);
+                            }
+                        }
+                        selectedCategories.clear();
+                        selectedCategories.addAll(updatedSelection);
                     }
                     else
                     {
@@ -131,20 +150,32 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
                 });
 
                 // Positive button: Apply filters
-                builder.setPositiveButton("אישור", (dialog, which) ->
-                {
-                    applyFilters(searchEditText.getText().toString().trim(), selectedCategories);
-                });
+                builder.setPositiveButton("אישור", null);
 
                 // Neutral button for adding a category
-                builder.setNeutralButton("הוסף קטגוריה", null);
+                builder.setNeutralButton("הוסף", null);
 
                 // Neutral button for deleting a category
-                builder.setNeutralButton("מחק", null);
-                builder.setNegativeButton("ביטול", (dialog, which) -> dialog.dismiss()); // Cancel button
+                builder.setNegativeButton("מחק", null);
+
                 AlertDialog dialog = builder.create();
                 dialog.show();
 
+                viewModel.getlistCategoriesLiveData().removeObservers(this);
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v ->
+                {
+                    isConfirmed[0] = true;
+                    // Fetch categories asynchronously
+                    viewModel.getFilteredLists(selectedCategories);
+                    viewModel.getlistCategoriesLiveData().observe(this, filteredLists ->
+                    {
+                        adapter.clear();
+                        adapter.addAll(filteredLists);
+                        listView.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
+                        dialog.dismiss();
+                    });
+                });
                 // Set up "Add Category" button behavior
                 dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v ->
                 {
@@ -158,11 +189,10 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
                     {
                         for (String category : selectedCategories)
                         {
+                            dialog.dismiss();
                             viewModel.deleteCategory(category);
                         }
                         Toast.makeText(this, "Selected categories deleted successfully", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss(); // Close the dialog
-                        showCategoryDialog(); // Refresh the dialog to show updated categories
                     }
                     else
                     {
@@ -171,7 +201,6 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
                 });
             }
         });
-
         viewModel.loadCategories();
     }
 
@@ -201,43 +230,5 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         });
         builder.setNegativeButton("ביטול", (dialog, which) -> dialog.dismiss());
         builder.show();
-    }
-    private void applyFilters(String query, List<String> categories) {
-        List<String> filtered = new ArrayList<>();
-
-        for (int index = 0; index < adapter.getCount(); index++)
-        { // Use a new variable instead of 'i'
-            final int currentIndex = index; // Make a final copy of the index
-            String listName = adapter.getItem(index);
-
-            // Text filter
-            if (!listName.toLowerCase().contains(query.toLowerCase())) continue;
-
-            // Fetch categories asynchronously
-            viewModel.getCategoriesOfList(String.valueOf(index)).observe(this, listCategories -> {
-                if (listCategories != null && !listCategories.isEmpty())
-                {
-                    for (String listCategory : listCategories)
-                    {
-                        if (categories != null && categories.contains(listCategory))
-                        {
-                            if (!filtered.contains(listName))
-                            { // Avoid duplicates
-                                filtered.add(listName);
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                // Update the adapter only after processing all lists
-                if (currentIndex == adapter.getCount() - 1)
-                { // Use the final variable
-                    adapter.clear();
-                    adapter.addAll(filtered);
-                    adapter.notifyDataSetChanged();
-                }
-            });
-        }
     }
 }

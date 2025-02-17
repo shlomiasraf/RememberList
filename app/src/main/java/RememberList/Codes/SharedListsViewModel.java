@@ -6,6 +6,8 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class SharedListsViewModel extends AndroidViewModel {
@@ -90,7 +92,8 @@ public class SharedListsViewModel extends AndroidViewModel {
 
         loadingLiveData.setValue(true);
 
-        try {
+        try
+        {
             repository.getCategories(categoriesLiveData, loadingLiveData, errorLiveData);
         } catch (Exception e) {
             errorLiveData.setValue("Failed to load categories: " + e.getMessage());
@@ -105,26 +108,32 @@ public class SharedListsViewModel extends AndroidViewModel {
      */
     public void addCategory(String categoryName)
     {
+        loadingLiveData.setValue(true); // Set loading state to true
+        repository.addCategory(categoryName, loadingLiveData, errorLiveData);
+        List<String> updatedCategories = categoriesLiveData.getValue();
+        if (updatedCategories == null)
         {
-            loadingLiveData.setValue(true); // Set loading state to true
-
-            // Add the category to the repository
-            repository.addCategory(categoryName, loadingLiveData, errorLiveData);
-
-            // Observe the loading state and reload the categories after the add operation completes
-            loadingLiveData.observeForever(new Observer<Boolean>() {
-                @Override
-                public void onChanged(Boolean isLoading) {
-                    if (Boolean.FALSE.equals(isLoading)) {
-                        // Refresh categories after adding
-                        loadCategories();
-                        // Remove the observer to avoid memory leaks
-                        loadingLiveData.removeObserver(this);
-                    }
-                }
-            });
+            updatedCategories = new ArrayList<>();
         }
+        if (!updatedCategories.contains(categoryName))
+        {
+            updatedCategories.add(categoryName);
+            categoriesLiveData.setValue(updatedCategories);
+        }
+        loadingLiveData.observeForever(new Observer<Boolean>()
+        {
+            @Override
+            public void onChanged(Boolean isLoading)
+            {
+                if (Boolean.FALSE.equals(isLoading))
+                {
+                    loadCategories();
+                    loadingLiveData.removeObserver(this);
+                }
+            }
+        });
     }
+
     /**
      * Deletes a category and refreshes the category list.
      *
@@ -139,7 +148,8 @@ public class SharedListsViewModel extends AndroidViewModel {
         loadingLiveData.observeForever(new Observer<Boolean>()
         {
             @Override
-            public void onChanged(Boolean isLoading) {
+            public void onChanged(Boolean isLoading)
+            {
                 if (Boolean.FALSE.equals(isLoading))
                 {
                     loadCategories(); // Refresh categories after deleting
@@ -150,6 +160,9 @@ public class SharedListsViewModel extends AndroidViewModel {
         });
     }
 
+    /**
+     * get shared lists from the repository and updates the LiveData.
+     */
     /**
      * get shared lists from the repository and updates the LiveData.
      */
@@ -173,19 +186,33 @@ public class SharedListsViewModel extends AndroidViewModel {
         {
             errorLiveData.setValue("Failed to load lists: " + e.getMessage());
         }
-
     }
 
     /**
      * Filters the shared lists based on a selected category.
      *
-     * @param listKey The category to filter by.
+     * @param Categories The categories to filter by.
      */
-    public LiveData<List<String>> getCategoriesOfList(String listKey) {
-        MutableLiveData<List<String>> categoriesLiveData = new MutableLiveData<>();
+    public void getFilteredLists(List<String> Categories)
+    {
+        if (Boolean.TRUE.equals(loadingLiveData.getValue()))
+        {
+            return;
+        }
 
-        repository.getCategoriesOfList(listKey, categoriesLiveData, errorLiveData);
-        return categoriesLiveData;
+        // Indicate loading has started
+        loadingLiveData.setValue(true);
+
+        // Fetch the lists from the repository
+        try
+        {
+            repository.getFilteredLists(Categories, loadingLiveData, listCategoriesLiveData, errorLiveData);
+        }
+        catch (Exception e)
+        {
+            errorLiveData.setValue("Failed to load lists: " + e.getMessage());
+        }
+
     }
 
 }

@@ -10,6 +10,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.*;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -364,7 +365,8 @@ public class Repository {
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {
+            public void onCancelled(DatabaseError error)
+            {
                 // Update error LiveData and stop loading state
                 loadingLiveData.setValue(false);
                 errorLiveData.setValue("Failed to fetch values: " + error.getMessage());
@@ -465,7 +467,8 @@ public class Repository {
                     loadingLiveData.setValue(false);
                 }
                 @Override
-                public void onCancelled(DatabaseError error) {
+                public void onCancelled(DatabaseError error)
+                {
                     errorLiveData.setValue("Failed to add value: " + error.getMessage());
                     loadingLiveData.setValue(false);
                 }
@@ -639,8 +642,7 @@ public class Repository {
             getCategoriesRef().addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot snapshot) {
-                    for (DataSnapshot child : snapshot.getChildren()) {
-                        String value = child.getValue(String.class);
+                    for (DataSnapshot child : snapshot.getChildren()) {String value = child.getValue(String.class);
                         if (value != null && value.equals(categoryName)) {
                             // Remove the category from the "categories" node
 
@@ -671,30 +673,56 @@ public class Repository {
             loadingLiveData.setValue(false);
         }
     }
-    public void getCategoriesOfList(String listKey, MutableLiveData<List<String>> categoriesLiveData, MutableLiveData<String> errorLiveData) {
-        getSharedListsRef().child(listKey).child("Categories").addListenerForSingleValueEvent(new ValueEventListener() {
+    public void getFilteredLists(List<String> filteredCategories,
+                                 MutableLiveData<Boolean> loadingLiveData,
+                                 MutableLiveData<List<String>> listsLiveData,
+                                 MutableLiveData<String> errorLiveData)
+    {
+        loadingLiveData.setValue(true);
+
+        getSharedListsRef().addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot)
             {
-                List<String> categories = new ArrayList<>();
+                List<String> lists = new ArrayList<>();
 
-                if (snapshot.exists()) {
-                    for (DataSnapshot child : snapshot.getChildren()) {
-                        String category = child.getValue(String.class);
-                        if (category != null) {
-                            categories.add(category);
+                if (snapshot.exists())
+                {
+                    for (DataSnapshot child : snapshot.getChildren())
+                    {
+                        GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {
+                        };
+                        List<String> categoriesOfList = child.child("Categories").getValue(t);
+                        if (categoriesOfList == null)
+                        {
+                            categoriesOfList = new ArrayList<>();
+                        }
+                        for (String category : filteredCategories)
+                        {
+                            if (categoriesOfList.contains(category) || category.equals("כל הקטגוריות"))
+                            {
+                                String listName = child.child("Name").getValue(String.class);
+                                if (listName != null)
+                                {
+                                    lists.add(listName);
+                                }
+                                break;
+                            }
                         }
                     }
                 }
-                categoriesLiveData.setValue(categories);
+                listsLiveData.setValue(lists);
+                loadingLiveData.setValue(false);
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-                errorLiveData.setValue("Failed to fetch categories: " + error.getMessage());
+                errorLiveData.setValue("Failed to fetch lists categories: " + error.getMessage());
+                loadingLiveData.setValue(false);
             }
         });
     }
+
 
     public void ChangeProductBox(Product product,int position, String keyPrefix)
     {
