@@ -238,8 +238,8 @@ public class Repository {
         getCategoriesRef().child(String.valueOf(3)).setValue("אירועים מיוחדים");
     }
     public void getCategories(final MutableLiveData<List<String>> CategoriesLiveData,
-                         final MutableLiveData<Boolean> loadingLiveData,
-                         final MutableLiveData<String> errorLiveData) {
+                              final MutableLiveData<Boolean> loadingLiveData,
+                              final MutableLiveData<String> errorLiveData) {
         loadingLiveData.setValue(true);
         getCategoriesRef().addListenerForSingleValueEvent(new ValueEventListener()
         {
@@ -383,7 +383,8 @@ public class Repository {
      * @param errorLiveData LiveData to capture error messages.
      */
     public void addList(String listName, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData) {
-        try {
+        try
+        {
             // Set loading state to true before starting the operation
             loadingLiveData.setValue(true);
             DatabaseReference getListsRef = getListsRef();
@@ -417,7 +418,67 @@ public class Repository {
                     loadingLiveData.setValue(false);
                 }
             });
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
+            // Set an error message and loading state to false if an exception occurs
+            errorLiveData.setValue("Failed to add value: " + e.getMessage());
+            loadingLiveData.setValue(false);
+        }
+    }
+    public void addSharedList(String listName,ArrayList<String> categories, ArrayList<String> valuesList, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData)
+    {
+        try
+        {
+            // Set loading state to true before starting the operation
+            loadingLiveData.setValue(true);
+            DatabaseReference getListsRef = getSharedListsRef();
+            DatabaseReference getValuesRef = getSharedValuesRef();
+            // Determine the next available index by reading the current children count
+            getListsRef.addListenerForSingleValueEvent(new ValueEventListener()
+            {
+                @Override
+                public void onDataChange(DataSnapshot snapshot)
+                {
+                    long count = snapshot.getChildrenCount();
+                    // Next index = count + 1 (assuming keys start at 1)
+                    Map<String, Object> valueWithBoolean = new HashMap<>();
+                    valueWithBoolean.put("Categories",categories);
+                    String userEmail = mAuth.getCurrentUser().getEmail();
+                    String emailNode = userEmail.replace(".", "_");
+                    valueWithBoolean.put("CreatedBy", emailNode);
+                    valueWithBoolean.put("Name",listName);
+                    valueWithBoolean.put("listSaveCount",String.valueOf(0));
+                    getListsRef.child(String.valueOf(count)).setValue(valueWithBoolean)
+                            .addOnSuccessListener(unused -> {
+                                // Set loading state to false after the operation is successful
+                                loadingLiveData.setValue(false);
+                                int i = 0;
+                                for (String value : valuesList)
+                                {
+                                    getValuesRef.child(listName + String.valueOf(count)).child(String.valueOf(i)).setValue(value);
+                                    i++;
+                                }
+
+                            })
+                            .addOnFailureListener(e -> {
+                                // Set an error message and loading state to false if the operation fails
+                                errorLiveData.setValue("Failed to add list: " + e.getMessage());
+                                loadingLiveData.setValue(false);
+                            });
+                }
+
+                @Override
+                public void onCancelled(DatabaseError error)
+                {
+                    // Set an error message and loading state to false if the listener is cancelled
+                    errorLiveData.setValue("Failed to add value: " + error.getMessage());
+                    loadingLiveData.setValue(false);
+                }
+            });
+        }
+        catch (Exception e)
+        {
             // Set an error message and loading state to false if an exception occurs
             errorLiveData.setValue("Failed to add value: " + e.getMessage());
             loadingLiveData.setValue(false);
