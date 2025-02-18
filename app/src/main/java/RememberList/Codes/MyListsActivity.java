@@ -2,6 +2,7 @@ package RememberList.Codes;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -21,7 +22,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
     private ArrayAdapter<String> adapter; // Adapter to display the lists
     private ListView list; // ListView for displaying lists
     private EditText editText; // EditText for user input
-    private Button sharelists, add, signOutButton; // Buttons for actions
+    private Button sharelists, add, signOutButton,record_btn; // Buttons for actions
     private String selectedList; // Currently selected list for deletion
     private int positionToDelete;
 
@@ -36,6 +37,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         editText = findViewById(R.id.editText);
         list = findViewById(R.id.listView);
         signOutButton = findViewById(R.id.signOutButton);
+        record_btn = findViewById(R.id.record_btn);
 
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(MyListsViewModel.class);
@@ -82,6 +84,20 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         add.setOnClickListener(this);
         sharelists.setOnClickListener(this);
         signOutButton.setOnClickListener(this);
+        record_btn.setOnClickListener(this);
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
+            // Get the recognized speech text
+            ArrayList<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            if (results != null && !results.isEmpty()) {
+                // Set the recognized speech to the EditText
+                editText.setText(results.get(0)); // Display the first result in EditText
+            }
+        }
     }
 
     private void setupListClickListeners() {
@@ -143,6 +159,19 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         } else if (view == signOutButton) {
             // Handle user sign-out
             handleSignOut();
+        }
+        else if (view == record_btn)
+        {
+
+            // Create an intent for speech recognition
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "he-IL"); // Set language to Hebrew, if needed
+
+            // Start the speech recognition activity
+            startActivityForResult(intent, 100);
+
+
         }
     }
 
