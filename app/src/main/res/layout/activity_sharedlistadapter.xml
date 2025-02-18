@@ -1,0 +1,48 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <!-- Container for Save Count and "שמירות" -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="start">
+
+        <!-- Save Count (Left Side) -->
+        <TextView
+            android:id="@+id/saveCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="16sp"
+            android:textColor="@android:color/black"/>
+
+        <!-- "שמירות" Label (not bold) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="שמירות"
+            android:textSize="14sp"
+            android:layout_marginStart="4dp"
+            android:textColor="@android:color/black"/>
+    </LinearLayout>
+
+    <!-- Spacer to Push List Name to the Right -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
+
+    <!-- List Name (Right Side) -->
+    <TextView
+        android:id="@+id/listName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="List Name"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"/>
+</LinearLayout>

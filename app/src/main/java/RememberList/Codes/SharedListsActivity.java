@@ -15,11 +15,12 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
     private SharedListsViewModel viewModel;
     private ListView listView;
     private ProgressBar progressBar;
-    private ArrayAdapter<String> adapter;
     private EditText searchEditText;
     private Button filterButton;
     private ImageButton backButton, refreshButton;
     private String listsCount;
+    private SharedListAdapter adapter; // Define adapter as a class-level variable
+
     // Multiple selected categories
     private List<String> selectedCategories = null;
 
@@ -38,13 +39,11 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         backButton = findViewById(R.id.back);
         refreshButton = findViewById(R.id.refresh);
 
-        // Adapter for shared lists
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
-        listView.setAdapter(adapter);
 
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(SharedListsViewModel.class);
         listsCount = getIntent().getStringExtra("LIST_COUNT");
+        viewModel.getSharedLists();
 
         // Observe loading state
         viewModel.getLoadingLiveData().observe(this, isLoading ->
@@ -62,27 +61,24 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
                 {
                     viewModel.getListsLiveData().observe(this, lists ->
                     {
-                        // Observe and load the lists when loading completes
-                        adapter.clear();
                         if (lists != null)
                         {
-                            adapter.addAll(lists);
+                            adapter = new SharedListAdapter(this, lists);
+                            listView.setAdapter(adapter);
                         }
-                        Log.d("ObserverCheck", "New observer added in getListsLiveData function");
                         viewModel.getListsLiveData().removeObservers(this);
                     });
                 }
             }
         });
-        viewModel.getSharedLists();
-        listView.setAdapter(adapter);
 
         // ListView item click listener
         listView.setOnItemClickListener((parent, view, position, id) ->
         {
-            String selectedList = adapter.getItem(position);
+            ListSaveObject selectedItem = adapter.getItem(position); // Correct type
+            String selectedListName = selectedItem.getListName();
             Intent intent = new Intent(SharedListsActivity.this, SharedListsProductsActivity.class);
-            intent.putExtra("LIST_NAME", selectedList); // Pass the list name
+            intent.putExtra("LIST_NAME", selectedListName); // Pass the list name
             intent.putExtra("LIST_KEY", String.valueOf(position)); // Add list ID to intent
             intent.putExtra("LIST_COUNT", listsCount);
             startActivity(intent); // Start Main5Activity

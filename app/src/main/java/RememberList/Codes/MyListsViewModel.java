@@ -75,7 +75,7 @@ public class MyListsViewModel extends AndroidViewModel {
         // Fetch the lists from the repository
         try
         {
-            repository.getLists("UserLists",listsLiveData, loadingLiveData, errorLiveData);
+            repository.getUserLists(listsLiveData, loadingLiveData, errorLiveData);
         } catch (Exception e)
         {
             errorLiveData.setValue("Failed to load lists: " + e.getMessage());

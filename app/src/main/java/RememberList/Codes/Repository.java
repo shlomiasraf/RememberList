@@ -270,20 +270,12 @@ public class Repository {
      * Retrieves all saved lists from Firebase under the "lists" node
      * and posts them to the provided LiveData.
      */
-    public void getLists(String listKind,final MutableLiveData<List<String>> listsLiveData,
+    public void getUserLists(final MutableLiveData<List<String>> listsLiveData,
                          final MutableLiveData<Boolean> loadingLiveData,
                          final MutableLiveData<String> errorLiveData)
     {
         loadingLiveData.setValue(true);
-        DatabaseReference getListsRef;
-        if(listKind.equals("SharedLists"))
-        {
-            getListsRef = getSharedListsRef();
-        }
-        else
-        {
-            getListsRef = getListsRef();
-        }
+        DatabaseReference getListsRef = getListsRef();
         getListsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot)
@@ -291,10 +283,6 @@ public class Repository {
                 List<String> lists = new ArrayList<>();
                 for (DataSnapshot child : snapshot.getChildren())
                 {
-                    if(listKind.equals("SharedLists"))
-                    {
-                        child = child.child("Name");
-                    }
                     String listStr = child.getValue(String.class);
                     if (listStr != null)
                     {
@@ -304,9 +292,40 @@ public class Repository {
                 listsLiveData.setValue(lists);
                 loadingLiveData.setValue(false);
             }
+            @Override
+            public void onCancelled(DatabaseError databaseError)
+            {
+                loadingLiveData.setValue(false);
+                errorLiveData.setValue("Failed to fetch content: " + databaseError.getMessage());
+            }
+        });
+    }
+    public void getSharedLists(final MutableLiveData<List<ListSaveObject>> listsLiveData, final MutableLiveData<Boolean> loadingLiveData, final MutableLiveData<String> errorLiveData)
+    {
+        loadingLiveData.setValue(true);
+        DatabaseReference getListsRef = getSharedListsRef();
+        getListsRef.addListenerForSingleValueEvent(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(DataSnapshot snapshot)
+            {
+                List<ListSaveObject> lists = new ArrayList<>();
+                for (DataSnapshot child : snapshot.getChildren())
+                {
+                    String listStr = child.child("Name").getValue(String.class);
+                    int listSaveCount = Integer.valueOf(child.child("listSaveCount").getValue(String.class));
+                    if (listStr != null)
+                    {
+                        lists.add(new ListSaveObject(listSaveCount, listStr));
+                    }
+                }
+                listsLiveData.setValue(lists);
+                loadingLiveData.setValue(false);
+            }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(DatabaseError databaseError)
+            {
                 loadingLiveData.setValue(false);
                 errorLiveData.setValue("Failed to fetch content: " + databaseError.getMessage());
             }
@@ -741,16 +760,17 @@ public class Repository {
     }
     public void getFilteredLists(List<String> filteredCategories,
                                  MutableLiveData<Boolean> loadingLiveData,
-                                 MutableLiveData<List<String>> listsLiveData,
+                                 MutableLiveData<List<ListSaveObject>> listsLiveData,
                                  MutableLiveData<String> errorLiveData)
     {
         loadingLiveData.setValue(true);
 
-        getSharedListsRef().addListenerForSingleValueEvent(new ValueEventListener() {
+        getSharedListsRef().addListenerForSingleValueEvent(new ValueEventListener()
+        {
             @Override
             public void onDataChange(DataSnapshot snapshot)
             {
-                List<String> lists = new ArrayList<>();
+                List<ListSaveObject> lists = new ArrayList<>();
 
                 if (snapshot.exists())
                 {
@@ -768,9 +788,10 @@ public class Repository {
                             if (categoriesOfList.contains(category) || category.equals("כל הקטגוריות"))
                             {
                                 String listName = child.child("Name").getValue(String.class);
+                                int listSaveCount = Integer.valueOf(child.child("listSaveCount").getValue(String.class));
                                 if (listName != null)
                                 {
-                                    lists.add(listName);
+                                    lists.add(new ListSaveObject(listSaveCount,listName));
                                 }
                                 break;
                             }

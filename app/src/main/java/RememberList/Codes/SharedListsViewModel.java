@@ -8,17 +8,18 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class SharedListsViewModel extends AndroidViewModel {
 
     private final Repository repository;
-    private final MutableLiveData<List<String>> listsLiveData = new MutableLiveData<>();
+    private final MutableLiveData<List<ListSaveObject>> listsLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<String>> categoriesLiveData = new MutableLiveData<>();
     private final MutableLiveData<Boolean> loadingLiveData = new MutableLiveData<>();
     private final MutableLiveData<String> errorLiveData = new MutableLiveData<>();
 
-    private final MutableLiveData<List<String>> listCategoriesLiveData = new MutableLiveData<>();
+    private final MutableLiveData<List<ListSaveObject>> listCategoriesLiveData = new MutableLiveData<>();
 
     /**
      * A map to track which category belongs to each list title:
@@ -49,7 +50,7 @@ public class SharedListsViewModel extends AndroidViewModel {
      *
      * @return LiveData containing the list of shared lists.
      */
-    public LiveData<List<String>> getListsLiveData()
+    public LiveData<List<ListSaveObject>> getListsLiveData()
     {
         return listsLiveData;
     }
@@ -63,7 +64,7 @@ public class SharedListsViewModel extends AndroidViewModel {
     {
         return loadingLiveData;
     }
-    public LiveData<List<String>> getlistCategoriesLiveData()
+    public LiveData<List<ListSaveObject>> getlistCategoriesLiveData()
     {
         return listCategoriesLiveData;
     }
@@ -180,7 +181,7 @@ public class SharedListsViewModel extends AndroidViewModel {
         // Fetch the lists from the repository
         try
         {
-            repository.getLists("SharedLists",listsLiveData, loadingLiveData, errorLiveData);
+            repository.getSharedLists(listsLiveData, loadingLiveData, errorLiveData);
         }
         catch (Exception e)
         {
