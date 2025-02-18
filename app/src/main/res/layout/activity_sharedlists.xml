@@ -56,12 +56,12 @@
     <!-- Search EditText -->
     <EditText
         android:id="@+id/editText"
-        android:layout_width="match_parent"
+        android:layout_width="197dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/filter"
+        android:layout_marginStart="210dp"
         android:layout_marginTop="-55dp"
         android:layout_marginBottom="16dp"
-        android:layout_marginStart="150dp"
         android:backgroundTint="#d8000000"
         android:hint="חפש לפי שם" />
 
@@ -83,5 +83,14 @@
         android:layout_height="match_parent"
         android:layout_below="@id/progressBar"
         android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/search_btn"
+        android:layout_width="54dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="160dp"
+        android:layout_marginTop="85dp"
+        android:layout_marginBottom="10dp"
+        android:text="🔎︎" />
 
 </RelativeLayout>
