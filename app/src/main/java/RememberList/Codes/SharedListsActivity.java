@@ -8,6 +8,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import android.util.Log;
 
@@ -15,12 +17,12 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
     private SharedListsViewModel viewModel;
     private ListView listView;
     private ProgressBar progressBar;
-    private EditText searchEditText;
     private Button filterButton;
     private ImageButton backButton, refreshButton;
     private String listsCount;
     private SharedListAdapter adapter; // Define adapter as a class-level variable
-
+    private HashMap<Integer, Integer> positionMap;
+    private List<ListSaveObject> originalList;
     // Multiple selected categories
     private List<String> selectedCategories = null;
 
@@ -34,7 +36,6 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         // Initialize UI elements
         listView = findViewById(R.id.listView);
         progressBar = findViewById(R.id.progressBar);
-        searchEditText = findViewById(R.id.editText);
         filterButton = findViewById(R.id.filter);
         backButton = findViewById(R.id.back);
         refreshButton = findViewById(R.id.refresh);
@@ -57,13 +58,33 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
             {
                 progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
                 // Observe lists data
-                if(selectedCategories == null)
+                if(selectedCategories == null && positionMap == null)
                 {
                     viewModel.getListsLiveData().observe(this, lists ->
                     {
                         if (lists != null)
                         {
+                            positionMap = new HashMap<>();
+
+                            // Store original list before sorting
+                            originalList = new ArrayList<>(lists);
+
+                            // Sort by 'saves' in descending order (highest saves first)
+                            Collections.sort(lists, (a, b) -> Integer.compare(b.getSaves(), a.getSaves()));
+
+                            // Store new indexes as keys and original indexes as values
+                            for (int newIndex = 0; newIndex < lists.size(); newIndex++)
+                            {
+                                int originalIndex = originalList.indexOf(lists.get(newIndex));
+                                positionMap.put(newIndex, originalIndex);
+                            }
+
                             adapter = new SharedListAdapter(this, lists);
+                            // Store new indexes as keys and original indexes as values
+                            for (int newIndex = 0; newIndex < lists.size(); newIndex++) {
+                                int originalIndex = originalList.indexOf(lists.get(newIndex));
+                                positionMap.put(newIndex, originalIndex);
+                            }
                             listView.setAdapter(adapter);
                         }
                         viewModel.getListsLiveData().removeObservers(this);
@@ -79,7 +100,7 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
             String selectedListName = selectedItem.getListName();
             Intent intent = new Intent(SharedListsActivity.this, SharedListsProductsActivity.class);
             intent.putExtra("LIST_NAME", selectedListName); // Pass the list name
-            intent.putExtra("LIST_KEY", String.valueOf(position)); // Add list ID to intent
+            intent.putExtra("LIST_KEY", String.valueOf(positionMap.get(position))); // Add list ID to intent
             intent.putExtra("LIST_COUNT", listsCount);
             startActivity(intent); // Start Main5Activity
         });
@@ -165,6 +186,15 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
                     viewModel.getFilteredLists(selectedCategories);
                     viewModel.getlistCategoriesLiveData().observe(this, filteredLists ->
                     {
+                        // Sort by 'saves' in descending order (highest saves first)
+                        Collections.sort(filteredLists, (a, b) -> Integer.compare(b.getSaves(), a.getSaves()));
+
+                        // Store new indexes as keys and original indexes as values
+                        for (int newIndex = 0; newIndex < filteredLists.size(); newIndex++)
+                        {
+                            int originalIndex = originalList.indexOf(filteredLists.get(newIndex));
+                            positionMap.put(newIndex, originalIndex);
+                        }
                         adapter.clear();
                         adapter.addAll(filteredLists);
                         listView.setAdapter(adapter);

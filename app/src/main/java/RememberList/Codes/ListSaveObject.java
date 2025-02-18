@@ -20,4 +20,21 @@ public class ListSaveObject
     {
         return listName;
     }
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj) {
+            return true; // If both references point to the same object
+        }
+        if (obj == null || getClass() != obj.getClass())
+        {
+            return false; // Ensure the object is not null and is of the same class
+        }
+
+        // Safe type casting
+        ListSaveObject other = (ListSaveObject) obj;
+
+        // Compare fields
+        return saves == other.getSaves() && listName.equals(other.getListName());
+    }
 }

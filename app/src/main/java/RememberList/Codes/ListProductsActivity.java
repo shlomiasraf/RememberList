@@ -125,7 +125,14 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         else if (view.getId() == R.id.delete)
         {
             // Handle deleting selected products
-            showDeleteConfirmationDialog();
+            if(selectedProducts.size() > 0)
+            {
+                showDeleteConfirmationDialog();
+            }
+            else
+            {
+                Toast.makeText(this, "לא סימנת ערכים למחיקה", Toast.LENGTH_SHORT).show();
+            }
         }
         else if (view.getId() == R.id.back)
         {
