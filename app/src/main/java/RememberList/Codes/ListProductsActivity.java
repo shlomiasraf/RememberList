@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -98,6 +99,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         findViewById(R.id.delete).setOnClickListener(this);
         findViewById(R.id.back).setOnClickListener(this);
         findViewById(R.id.share).setOnClickListener(this);
+        findViewById(R.id.record_btn).setOnClickListener(this);
 
 
 
@@ -145,6 +147,17 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         {
             //Add list to shared lists:
             showShareOptionsDialog();
+        }
+        else if(view.getId() == R.id.record_btn)
+        {
+            // Create an intent for speech recognition
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "he-IL"); // Set language to Hebrew, if needed
+
+            // Start the speech recognition activity
+            startActivityForResult(intent, 100);
+
         }
     }
     private void showCategoryInputDialog() {
@@ -325,6 +338,20 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
             return;
         }
         notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
+            // Get the recognized speech text
+            ArrayList<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            if (results != null && !results.isEmpty()) {
+                // Set the recognized speech to the EditText
+                editText.setText(results.get(0)); // Display the first result in EditText
+            }
+        }
     }
 
 
