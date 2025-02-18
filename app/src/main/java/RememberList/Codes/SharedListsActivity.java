@@ -177,7 +177,6 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
 
                 AlertDialog dialog = builder.create();
                 dialog.show();
-
                 viewModel.getlistCategoriesLiveData().removeObservers(this);
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v ->
                 {
