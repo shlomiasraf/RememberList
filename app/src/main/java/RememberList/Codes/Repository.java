@@ -313,7 +313,7 @@ public class Repository {
                 for (DataSnapshot child : snapshot.getChildren())
                 {
                     String listStr = child.child("Name").getValue(String.class);
-                    int listSaveCount = Integer.valueOf(child.child("listSaveCount").getValue(String.class));
+                    int listSaveCount = child.child("listSaveCount").getValue(Integer.class);
                     if (listStr != null)
                     {
                         lists.add(new ListSaveObject(listSaveCount, listStr));
@@ -467,7 +467,7 @@ public class Repository {
                     String emailNode = userEmail.replace(".", "_");
                     valueWithBoolean.put("CreatedBy", emailNode);
                     valueWithBoolean.put("Name",listName);
-                    valueWithBoolean.put("listSaveCount",String.valueOf(0));
+                    valueWithBoolean.put("listSaveCount",0);
                     getListsRef.child(String.valueOf(count)).setValue(valueWithBoolean)
                             .addOnSuccessListener(unused -> {
                                 // Set loading state to false after the operation is successful
@@ -520,7 +520,8 @@ public class Repository {
             loadingLiveData.setValue(true);
             final DatabaseReference listValuesRef = getValuesRef().child(keyPrefix);
             // Determine the next available index by reading the current children count
-            listValuesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            listValuesRef.addListenerForSingleValueEvent(new ValueEventListener()
+            {
                 @Override
                 public void onDataChange(DataSnapshot snapshot)
                 {
@@ -655,62 +656,71 @@ public class Repository {
      * @param indexes The 1-based indexes of the values to delete.
      * @param errorLiveData LiveData to capture error messages.
      */
-    public void deleteValues(String keyPrefix, int[] indexes, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData)
+    public void deleteValues(String keyPrefix, int[] indexes, int listSize, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData)
     {
         // Set loading state to true before starting the operation
         loadingLiveData.setValue(true);
         DatabaseReference listValuesRef = getValuesRef().child(keyPrefix);
+        Boolean listEmpty = false;
         // Remove the values at the given indexes
         for (int i = 0; i < indexes.length; i++)
         {
-            listValuesRef.child(String.valueOf(indexes[i])).removeValue();
-        }
-
-        // Add a listener to handle re-indexing after deletion
-        listValuesRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot)
+            if (listSize == indexes.length && i == indexes.length-1)
             {
-                if (snapshot.exists())
-                {
-                    int counter = 0; // Keeps track of how many gaps exist (null values)
+                Map<String, Object> valueWithBoolean = new HashMap<>();
+                valueWithBoolean.put("value", "");
+                valueWithBoolean.put("isChecked", false);
+                listValuesRef.child(String.valueOf(indexes[i])).setValue(valueWithBoolean);
+                listEmpty = true;
+                loadingLiveData.setValue(false);
+            }
+            else
+            {
+                listValuesRef.child(String.valueOf(indexes[i])).removeValue();
+            }
+        }
+        if(!listEmpty)
+        {
+            // Add a listener to handle re-indexing after deletion
+            listValuesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        int counter = 0; // Keeps track of how many gaps exist (null values)
 
-                    // Iterate through the remaining items
-                    for (int i = indexes[0]; i < snapshot.getChildrenCount() + indexes.length; i++)
-                    {
-                        String value = snapshot.child(String.valueOf(i)).child("value").getValue(String.class);
-                        if (value == null)
-                        {
-                            // Increment the counter for null (deleted) values
-                            counter++;
+                        // Iterate through the remaining items
+                        for (int i = indexes[0]; i < snapshot.getChildrenCount() + indexes.length; i++) {
+                            String value = snapshot.child(String.valueOf(i)).child("value").getValue(String.class);
+                            if (value == null) {
+                                // Increment the counter for null (deleted) values
+                                counter++;
+                            } else {
+                                Map<String, Object> valueWithBoolean = new HashMap<>();
+                                valueWithBoolean.put("value", value);
+                                valueWithBoolean.put("isChecked", snapshot.child(String.valueOf(i)).child("isChecked").getValue(Boolean.class));
+                                // Move the current value to fill the gap
+                                listValuesRef.child(String.valueOf(i - counter)).setValue(valueWithBoolean);
+                                // Remove the old key to avoid duplicates
+                                listValuesRef.child(String.valueOf(i)).removeValue();
+                            }
                         }
-                        else
-                        {
-                            Map<String, Object> valueWithBoolean = new HashMap<>();
-                            valueWithBoolean.put("value", value);
-                            valueWithBoolean.put("isChecked", snapshot.child(String.valueOf(i)).child("isChecked").getValue(Boolean.class));
-                            // Move the current value to fill the gap
-                            listValuesRef.child(String.valueOf(i - counter)).setValue(valueWithBoolean);
-                            // Remove the old key to avoid duplicates
-                            listValuesRef.child(String.valueOf(i)).removeValue();
-                        }
+
+                        // Notify completion of loading
+                        loadingLiveData.setValue(false);
+                    } else {
+                        // If the snapshot doesn't exist, notify error
+                        errorLiveData.setValue("No data found in the list.");
+                        loadingLiveData.setValue(false);
                     }
-
-                    // Notify completion of loading
-                    loadingLiveData.setValue(false);
-                } else {
-                    // If the snapshot doesn't exist, notify error
-                    errorLiveData.setValue("No data found in the list.");
-                    loadingLiveData.setValue(false);
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Handle database access errors
-                errorLiveData.setValue("Failed to access database: " + error.getMessage());
-            }
-        });
+                @Override
+                public void onCancelled(DatabaseError error) {
+                    // Handle database access errors
+                    errorLiveData.setValue("Failed to access database: " + error.getMessage());
+                }
+            });
+        }
     }
     /**
      * Deletes a category and its associated data from Firebase.
@@ -788,7 +798,7 @@ public class Repository {
                             if (categoriesOfList.contains(category) || category.equals("כל הקטגוריות"))
                             {
                                 String listName = child.child("Name").getValue(String.class);
-                                int listSaveCount = Integer.valueOf(child.child("listSaveCount").getValue(String.class));
+                                int listSaveCount = child.child("listSaveCount").getValue(Integer.class);
                                 if (listName != null)
                                 {
                                     lists.add(new ListSaveObject(listSaveCount,listName));
@@ -808,6 +818,50 @@ public class Repository {
                 loadingLiveData.setValue(false);
             }
         });
+    }
+    public void updateListSaves(String key, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData) {
+        try {
+            // Set loading state to true before starting the operation
+            loadingLiveData.setValue(true);
+
+            // Get reference to "listSaveCount"
+            DatabaseReference savesReference = getSharedListsRef().child(key).child("listSaveCount");
+
+            // Read the current value asynchronously
+            savesReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+                    Integer listSaveCount = snapshot.getValue(Integer.class);
+
+                    if (listSaveCount == null) {
+                        listSaveCount = 0; // Default to 0 if no value exists
+                    }
+
+                    // Increment the count and update the database
+                    savesReference.setValue(listSaveCount + 1)
+                            .addOnSuccessListener(aVoid -> {
+                                // Successfully updated the value
+                                loadingLiveData.setValue(false);
+                            })
+                            .addOnFailureListener(e -> {
+                                // Handle failure
+                                errorLiveData.setValue("Failed to update value: " + e.getMessage());
+                                loadingLiveData.setValue(false);
+                            });
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    // Handle read error
+                    errorLiveData.setValue("Database read failed: " + databaseError.getMessage());
+                    loadingLiveData.setValue(false);
+                }
+            });
+
+        } catch (Exception e) {
+            errorLiveData.setValue("Unexpected error: " + e.getMessage());
+            loadingLiveData.setValue(false);
+        }
     }
 
 

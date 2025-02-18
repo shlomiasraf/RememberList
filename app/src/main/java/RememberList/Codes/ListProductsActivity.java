@@ -36,7 +36,6 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
     private String listName; // The name of the list being managed
     private String listKey; // The key of the list being managed
 
-    private String listsCount;
 
     private ArrayList<String> valuesList; // Data list for the adapter
 
@@ -68,7 +67,6 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         viewModel = new ViewModelProvider(this).get(ListProductsViewModel.class);
         listName = getIntent().getStringExtra("LIST_NAME"); // Get the list name passed via Intent
         listKey = getIntent().getStringExtra("LIST_KEY"); // Get the key of the list passed via Intent
-        listsCount = getIntent().getStringExtra("LIST_COUNT");
         TextView title = findViewById(R.id.textview);
         title.setText(listName);
         viewModel.init(listName,listKey); // Initialize ViewModel with the list name
@@ -78,8 +76,12 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
             if (products != null && !products.get(0).name.equals(""))
             {
                 boxAdapter = new ListAdapter(ListProductsActivity.this, listName+listKey, new ArrayList<>(products),true); // Ensure a fresh ArrayList
-                lvMain.setAdapter(boxAdapter); // Set the adapter for the ListView
             }
+            else
+            {
+                boxAdapter = new ListAdapter(ListProductsActivity.this, listName + listKey, new ArrayList<>(), true);
+            }
+            lvMain.setAdapter(boxAdapter); // Set the adapter for the ListView
         });
 
         // Create the Notification Channel (Only for Android 8.0+)
@@ -273,7 +275,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
                         }
                     }
                     // Delete selected products via ViewModel
-                    viewModel.deleteProducts(selectedProducts);
+                    viewModel.deleteProducts(selectedProducts, boxAdapter.getCount());
                     selectedProducts.clear(); // Clear the selected products list
                     Toast.makeText(this, "Selected items deleted", Toast.LENGTH_SHORT).show(); // Show confirmation
                 })

@@ -74,6 +74,8 @@ public class SharedListsProductsViewModel extends AndroidViewModel {
         repository.addList(listName, loadingLiveData, errorLiveData);
 
         repository.addValues(keyPrefix, valuesList, loadingLiveData, errorLiveData);
+
+        repository.updateListSaves(listKey, loadingLiveData, errorLiveData);
         // Observe the loading state and reload the lists after the add operation completes
         loadingLiveData.observeForever(new Observer<Boolean>() {
             @Override

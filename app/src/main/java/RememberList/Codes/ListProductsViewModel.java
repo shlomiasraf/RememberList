@@ -116,7 +116,7 @@ public class ListProductsViewModel extends AndroidViewModel {
      *
      * @param selectedProducts the list of products to delete
      */
-    public void deleteProducts(List<Product> selectedProducts)
+    public void deleteProducts(List<Product> selectedProducts, int listSize)
     {
         loadingLiveData.setValue(true); // Set loading state to true
         // Reverse loop to avoid index shifting issues
@@ -126,9 +126,10 @@ public class ListProductsViewModel extends AndroidViewModel {
             Product product = selectedProducts.get(i);
             indexes[i] = productsLiveData.getValue() != null ? productsLiveData.getValue().indexOf(product) : -1;
         }
-        repository.deleteValues((listName+listKey), indexes,loadingLiveData, errorLiveData); // Delete the products from the repository
+        repository.deleteValues((listName+listKey), indexes, listSize, loadingLiveData, errorLiveData); // Delete the products from the repository
         // Observe the loading state and reload the lists after the add operation completes
-        loadingLiveData.observeForever(new Observer<Boolean>() {
+        loadingLiveData.observeForever(new Observer<Boolean>()
+        {
             @Override
             public void onChanged(Boolean isLoading)
             {
