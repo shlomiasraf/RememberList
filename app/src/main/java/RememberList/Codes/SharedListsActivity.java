@@ -2,6 +2,7 @@ package RememberList.Codes;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AlertDialog;
@@ -24,7 +25,7 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
     private List<ListSaveObject> originalList;
     // Multiple selected categories
     private List<String> selectedCategories = null;
-    private Button filterButton,search_btn;
+    private Button filterButton,search_btn,record_btn;
     private EditText searchEditText;
 
 
@@ -42,6 +43,7 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         refreshButton = findViewById(R.id.refresh);
         search_btn = findViewById(R.id.search_btn);
         searchEditText = findViewById(R.id.editText);
+        record_btn = findViewById(R.id.record_btn);
 
 
         // Initialize ViewModel
@@ -112,6 +114,7 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         backButton.setOnClickListener(this);
         refreshButton.setOnClickListener(v -> viewModel.getSharedLists());
         filterButton.setOnClickListener(v -> showCategoryDialog());
+        record_btn.setOnClickListener(this);
 
         search_btn.setOnClickListener(v -> {
             // Get the text the user typed into the search box
@@ -134,6 +137,19 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
             // Return to the previous activity
             Intent intent = new Intent(this, MyListsActivity.class);
             startActivity(intent);
+        }
+        else if (view == record_btn)
+        {
+
+            // Create an intent for speech recognition
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "he-IL"); // Set language to Hebrew, if needed
+
+            // Start the speech recognition activity
+            startActivityForResult(intent, 100);
+
+
         }
     }
 
@@ -271,4 +287,19 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         builder.setNegativeButton("ביטול", (dialog, which) -> dialog.dismiss());
         builder.show();
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
+            // Get the recognized speech text
+            ArrayList<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            if (results != null && !results.isEmpty()) {
+                // Set the recognized speech to the EditText
+                searchEditText.setText(results.get(0)); // Display the first result in EditText
+            }
+        }
+    }
+
 }
