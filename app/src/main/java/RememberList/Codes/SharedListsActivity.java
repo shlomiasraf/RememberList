@@ -17,7 +17,6 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
     private SharedListsViewModel viewModel;
     private ListView listView;
     private ProgressBar progressBar;
-    private Button filterButton;
     private ImageButton backButton, refreshButton;
     private String listsCount;
     private SharedListAdapter adapter; // Define adapter as a class-level variable
@@ -25,6 +24,8 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
     private List<ListSaveObject> originalList;
     // Multiple selected categories
     private List<String> selectedCategories = null;
+    private Button filterButton,search_btn;
+    private EditText searchEditText;
 
 
     @Override
@@ -39,6 +40,8 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         filterButton = findViewById(R.id.filter);
         backButton = findViewById(R.id.back);
         refreshButton = findViewById(R.id.refresh);
+        search_btn = findViewById(R.id.search_btn);
+        searchEditText = findViewById(R.id.editText);
 
 
         // Initialize ViewModel
@@ -109,6 +112,18 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         backButton.setOnClickListener(this);
         refreshButton.setOnClickListener(v -> viewModel.getSharedLists());
         filterButton.setOnClickListener(v -> showCategoryDialog());
+
+        search_btn.setOnClickListener(v -> {
+            // Get the text the user typed into the search box
+            String searchText = searchEditText.getText().toString().trim();
+
+            // Show the text in a Toast message
+            if (!searchText.isEmpty()) {
+                Toast.makeText(SharedListsActivity.this, searchText, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(SharedListsActivity.this, "תיבת החיפוש ריקה", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
