@@ -99,7 +99,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         findViewById(R.id.delete).setOnClickListener(this);
         findViewById(R.id.back).setOnClickListener(this);
         findViewById(R.id.share).setOnClickListener(this);
-        findViewById(R.id.record_btn).setOnClickListener(this);
+        findViewById(R.id.record).setOnClickListener(this);
 
 
 
@@ -117,24 +117,16 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
             {
                 viewModel.addProduct(productName); // Add product via ViewModel
                 editText.setText(""); // Clear the input field
-                Toast.makeText(this, "Product added", Toast.LENGTH_SHORT).show(); // Show confirmation
+                Toast.makeText(this, "נוסף ערך בהצלחה", Toast.LENGTH_SHORT).show(); // Show confirmation
             }
             else
             {
-                Toast.makeText(this, "Enter a product name", Toast.LENGTH_SHORT).show(); // Prompt for input
+                Toast.makeText(this, "הכנס את שם הערך", Toast.LENGTH_SHORT).show(); // Prompt for input
             }
         }
         else if (view.getId() == R.id.delete)
         {
-            // Handle deleting selected products
-            if(selectedProducts.size() > 0)
-            {
-                showDeleteConfirmationDialog();
-            }
-            else
-            {
-                Toast.makeText(this, "לא סימנת ערכים למחיקה", Toast.LENGTH_SHORT).show();
-            }
+            showDeleteConfirmationDialog();
         }
         else if (view.getId() == R.id.back)
         {
@@ -148,7 +140,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
             //Add list to shared lists:
             showShareOptionsDialog();
         }
-        else if(view.getId() == R.id.record_btn)
+        else if(view.getId() == R.id.record)
         {
             // Create an intent for speech recognition
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -245,22 +237,33 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
     /**
      * Checks if all items are checked and shows a notification if not.
      */
-    private void checkAndShowNotification() {
+    private void checkAndShowNotification()
+    {
         boolean allChecked = true;
-
+        boolean oneChecked = false;
         // Check if all items in the list are checked
         if (boxAdapter != null) { // Ensure adapter is not null to prevent crashes
-            for (int i = 0; i < boxAdapter.getCount(); i++) {
+            for (int i = 0; i < boxAdapter.getCount(); i++)
+            {
                 Product product = boxAdapter.getProduct(i);
-                if (!product.box) { // If any product is unchecked
+                if (!product.box)
+                { // If any product is unchecked
                     allChecked = false;
+                }
+                else
+                {
+                    oneChecked = true;
+                }
+                if(!allChecked && oneChecked)
+                {
                     break;
                 }
             }
         }
 
         // If some items are unchecked and no notification has been sent yet, show notification
-        if (!allChecked && !notificationSent) {
+        if (!allChecked && !notificationSent && oneChecked)
+        {
             showNotification();
             notificationSent = true; // Prevent duplicate notifications
         }
@@ -284,7 +287,8 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
     {
         new AlertDialog.Builder(this)
                 .setMessage("Are you sure you want to delete the selected items?") // Dialog message
-                .setPositiveButton("Delete", (dialog, which) -> {
+                .setPositiveButton("Delete", (dialog, which) ->
+                {
                     // Collect selected products
                     for (int i = 0; i < boxAdapter.getCount(); i++)
                     {
@@ -295,9 +299,17 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
                         }
                     }
                     // Delete selected products via ViewModel
-                    viewModel.deleteProducts(selectedProducts, boxAdapter.getCount());
-                    selectedProducts.clear(); // Clear the selected products list
-                    Toast.makeText(this, "Selected items deleted", Toast.LENGTH_SHORT).show(); // Show confirmation
+                    if(selectedProducts.size() > 0)
+                    {
+                        viewModel.deleteProducts(selectedProducts, boxAdapter.getCount());
+                        selectedProducts.clear(); // Clear the selected products list
+                        Toast.makeText(this, "נמחקו הערכים המסומנים", Toast.LENGTH_SHORT).show(); // Show confirmation
+                    }
+                    else
+                    {
+                        Toast.makeText(this, "לא סימנת ערכים למחיקה", Toast.LENGTH_SHORT).show();
+                    }
+
                 })
                 .setNegativeButton("Cancel", null) // Do nothing on cancel
                 .show();
@@ -319,11 +331,12 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         }
     }
     // Function to show a notification
-    private void showNotification() {
+    private void showNotification()
+    {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher_foreground)
                 .setContentTitle("שים לב!")
-                .setContentText("חלק מהפריטים ברשימה לא מסומנים.")
+                .setContentText("לא לקחת את כל הפריטים שברשימה.")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);

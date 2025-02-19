@@ -10,7 +10,6 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.*;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -300,7 +299,7 @@ public class Repository {
             }
         });
     }
-    public void getSharedLists(final MutableLiveData<List<ListSaveObject>> listsLiveData, final MutableLiveData<Boolean> loadingLiveData, final MutableLiveData<String> errorLiveData)
+    public void getSharedLists(final MutableLiveData<List<ListSharedObject>> listsLiveData, final MutableLiveData<Boolean> loadingLiveData, final MutableLiveData<String> errorLiveData)
     {
         loadingLiveData.setValue(true);
         DatabaseReference getListsRef = getSharedListsRef();
@@ -309,14 +308,16 @@ public class Repository {
             @Override
             public void onDataChange(DataSnapshot snapshot)
             {
-                List<ListSaveObject> lists = new ArrayList<>();
+                List<ListSharedObject> lists = new ArrayList<>();
                 for (DataSnapshot child : snapshot.getChildren())
                 {
                     String listStr = child.child("Name").getValue(String.class);
                     int listSaveCount = child.child("listSaveCount").getValue(Integer.class);
+                    List<String> listCategoriesList = child.child("Categories").getValue(new GenericTypeIndicator<List<String>>() {});
+                    String[] listCategories = listCategoriesList != null ? listCategoriesList.toArray(new String[0]) : new String[0];
                     if (listStr != null)
                     {
-                        lists.add(new ListSaveObject(listSaveCount, listStr));
+                        lists.add(new ListSharedObject(listSaveCount, listStr, listCategories));
                     }
                 }
                 listsLiveData.setValue(lists);
@@ -577,9 +578,17 @@ public class Repository {
             // Determine the next available index by reading the current children count
             getCategoriesRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
-                public void onDataChange(DataSnapshot snapshot) {
+                public void onDataChange(DataSnapshot snapshot)
+                {
                     long count = snapshot.getChildrenCount(); // Get the number of existing categories
-
+                    if(count == 1)
+                    {
+                        DataSnapshot child = snapshot.getChildren().iterator().next();
+                        if (child.getValue() != null && child.getValue().equals(""))
+                        {
+                            count = 0;
+                        }
+                    }
                     // Add the new category at the next available index
                     getCategoriesRef.child(String.valueOf(count)).setValue(categoryName)
                             .addOnSuccessListener(unused -> {
@@ -715,7 +724,8 @@ public class Repository {
                 }
 
                 @Override
-                public void onCancelled(DatabaseError error) {
+                public void onCancelled(DatabaseError error)
+                {
                     // Handle database access errors
                     errorLiveData.setValue("Failed to access database: " + error.getMessage());
                 }
@@ -723,54 +733,81 @@ public class Repository {
         }
     }
     /**
-     * Deletes a category and its associated data from Firebase.
+     * Deletes the categories and its associated data from Firebase.
      *
-     * @param categoryName   The name of the category to delete.
+     * @param indexes   The inedexes of the categories to delete.
      * @param loadingLiveData LiveData to indicate the loading state.
      * @param errorLiveData   LiveData to capture error messages.
      */
-    public void deleteCategory(String categoryName, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData) {
-        try {
-            // Set loading state to true before starting the operation
-            loadingLiveData.setValue(true);
-            // Access the "categories" node and find the category by its name
-            getCategoriesRef().addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot snapshot) {
-                    for (DataSnapshot child : snapshot.getChildren()) {String value = child.getValue(String.class);
-                        if (value != null && value.equals(categoryName)) {
-                            // Remove the category from the "categories" node
+    public void deleteCategories(ArrayList<Integer> indexes, int categoriesSize, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData)
+    {
+        // Set loading state to true before starting the operation
+        loadingLiveData.setValue(true);
+        DatabaseReference categoriesRef = getCategoriesRef();
+        Boolean categoriesEmpty = false;
+        // Remove the values at the given indexes
+        for (int i = 0; i < indexes.size(); i++)
+        {
+            if (categoriesSize == indexes.size() && i == indexes.size()-1)
+            {
 
-                            child.getRef().removeValue().addOnSuccessListener(aVoid -> {
-                                        loadingLiveData.setValue(false);
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        loadingLiveData.setValue(false);
-                                        errorLiveData.setValue("Failed to delete category: " + e.getMessage());
-                                    });
-                            break;
+                categoriesRef.child(String.valueOf(indexes.get(i))).setValue("");
+                categoriesEmpty = true;
+                loadingLiveData.setValue(false);
+            }
+            else
+            {
+                categoriesRef.child(String.valueOf(indexes.get(i))).removeValue();
+            }
+        }
+        categoriesRef.addListenerForSingleValueEvent(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(DataSnapshot snapshot)
+            {
+                if (snapshot.exists())
+                {
+                    int counter = 0; // Keeps track of how many gaps exist (null values)
+
+                    // Iterate through the remaining items
+                    for (int i = indexes.get(0); i < snapshot.getChildrenCount() + indexes.size(); i++)
+                    {
+                        String value = snapshot.child(String.valueOf(i)).getValue(String.class);
+                        if (value == null)
+                        {
+                            // Increment the counter for null (deleted) values
+                            counter++;
+                        }
+                        else
+                        {
+                            // Move the current value to fill the gap
+                            categoriesRef.child(String.valueOf(i - counter)).setValue(value);
+                            // Remove the old key to avoid duplicates
+                            categoriesRef.child(String.valueOf(i)).removeValue();
                         }
                     }
-                    loadingLiveData.setValue(false);
-                }
 
-                @Override
-                public void onCancelled(DatabaseError error) {
-                    // Handle cancellation or access errors
+                    // Notify completion of loading
                     loadingLiveData.setValue(false);
-                    errorLiveData.setValue("Failed to access categories: " + error.getMessage());
                 }
-            });
-        }
-        catch (Exception e) {
-            // Set an error message and loading state to false if an exception occurs
-            errorLiveData.setValue("Failed to delete category: " + e.getMessage());
-            loadingLiveData.setValue(false);
-        }
+                else
+                {
+                    // If the snapshot doesn't exist, notify error
+                    errorLiveData.setValue("No data found in the category.");
+                    loadingLiveData.setValue(false);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError error)
+            {
+                // Handle database access errors
+                errorLiveData.setValue("Failed to access database: " + error.getMessage());
+            }
+        });
     }
     public void getFilteredLists(List<String> filteredCategories,
                                  MutableLiveData<Boolean> loadingLiveData,
-                                 MutableLiveData<List<ListSaveObject>> listsLiveData,
+                                 MutableLiveData<List<ListSharedObject>> listsLiveData,
                                  MutableLiveData<String> errorLiveData)
     {
         loadingLiveData.setValue(true);
@@ -780,30 +817,36 @@ public class Repository {
             @Override
             public void onDataChange(DataSnapshot snapshot)
             {
-                List<ListSaveObject> lists = new ArrayList<>();
+                List<ListSharedObject> lists = new ArrayList<>();
 
                 if (snapshot.exists())
                 {
                     for (DataSnapshot child : snapshot.getChildren())
                     {
-                        GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {
-                        };
+                        GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {};
                         List<String> categoriesOfList = child.child("Categories").getValue(t);
                         if (categoriesOfList == null)
                         {
                             categoriesOfList = new ArrayList<>();
                         }
-                        for (String category : filteredCategories)
-                        {
-                            if (categoriesOfList.contains(category) || category.equals("כל הקטגוריות"))
+                        if (filteredCategories != null) {
+                            Boolean containsCategories = true;
+                            for (String category : filteredCategories) {
+                                if (!categoriesOfList.contains(category) && !category.equals("כל הקטגוריות")) {
+                                    containsCategories = false;
+                                    break;
+                                }
+                            }
+                            if (containsCategories)
                             {
                                 String listName = child.child("Name").getValue(String.class);
                                 int listSaveCount = child.child("listSaveCount").getValue(Integer.class);
-                                if (listName != null)
-                                {
-                                    lists.add(new ListSaveObject(listSaveCount,listName));
+                                List<String> listCategoriesList = child.child("Categories").getValue(new GenericTypeIndicator<List<String>>() {
+                                });
+                                String[] listCategories = listCategoriesList != null ? listCategoriesList.toArray(new String[0]) : new String[0];
+                                if (listName != null) {
+                                    lists.add(new ListSharedObject(listSaveCount, listName, listCategories));
                                 }
-                                break;
                             }
                         }
                     }

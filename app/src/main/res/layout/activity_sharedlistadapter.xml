@@ -36,6 +36,16 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"/>
+    <!-- List Name (Right Side) -->
+
+    <TextView
+        android:id="@+id/listCategories"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Categories"
+        android:textSize="10sp"
+        android:textColor="@android:color/holo_blue_bright"
+        android:layout_marginTop="2dp"/>
 
     <!-- List Name (Right Side) -->
     <TextView
@@ -45,4 +55,5 @@
         android:text="List Name"
         android:textSize="16sp"
         android:textColor="@android:color/black"/>
+
 </LinearLayout>

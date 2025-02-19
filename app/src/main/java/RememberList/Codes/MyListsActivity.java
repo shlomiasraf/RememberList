@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -22,12 +23,14 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
     private ArrayAdapter<String> adapter; // Adapter to display the lists
     private ListView list; // ListView for displaying lists
     private EditText editText; // EditText for user input
-    private Button sharelists, add, signOutButton,record_btn; // Buttons for actions
+    private Button sharelists, add, signOutButton; // Buttons for actions
+    private ImageButton recordButton;
     private String selectedList; // Currently selected list for deletion
     private int positionToDelete;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mylists);
 
@@ -37,7 +40,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         editText = findViewById(R.id.editText);
         list = findViewById(R.id.listView);
         signOutButton = findViewById(R.id.signOutButton);
-        record_btn = findViewById(R.id.record_btn);
+        recordButton = findViewById(R.id.record);
 
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(MyListsViewModel.class);
@@ -55,7 +58,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
             if (Boolean.TRUE.equals(isLoading))
             {
                 // Optional: Show a loading indicator here
-                Toast.makeText(this, "Loading data...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "טוען נתונים...", Toast.LENGTH_SHORT).show();
             }
             else
             {
@@ -84,7 +87,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         add.setOnClickListener(this);
         sharelists.setOnClickListener(this);
         signOutButton.setOnClickListener(this);
-        record_btn.setOnClickListener(this);
+        recordButton.setOnClickListener(this);
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -122,15 +125,15 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
     private void showDeleteConfirmationDialog()
     {
         new AlertDialog.Builder(this)
-                .setMessage("Are you sure you want to delete this list? Once deleted, it cannot be recovered.")
-                .setPositiveButton("Delete", (dialog, which) -> {
+                .setMessage("אתה בטוח שתרצה למחוק את הרשימה? ברגע שתמחק לא תוכל לשחזר אותה.")
+                .setPositiveButton("מחק", (dialog, which) -> {
                     if (selectedList != null)
                     {
                         viewModel.deleteList(selectedList,String.valueOf(positionToDelete)); // Delete the list using ViewModel
-                        Toast.makeText(this, "List deleted", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "הרשימה נמחקה בהצלחה", Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton("בטל", null)
                 .show();
     }
 
@@ -146,7 +149,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
             }
             else
             {
-                Toast.makeText(this, "List name cannot be empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "שם הרשימה לא יכול להיות ריק", Toast.LENGTH_SHORT).show();
             }
         }
         else if (view == sharelists)
@@ -160,7 +163,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
             // Handle user sign-out
             handleSignOut();
         }
-        else if (view == record_btn)
+        else if (view == recordButton)
         {
 
             // Create an intent for speech recognition
@@ -181,6 +184,6 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear activity stack
         startActivity(intent);
-        Toast.makeText(this, "Signed out successfully", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "ההתנתקות התבצעה בהצלחה", Toast.LENGTH_SHORT).show();
     }
 }

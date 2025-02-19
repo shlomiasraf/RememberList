@@ -117,7 +117,7 @@ public class LoginActivity extends AppCompatActivity
             }
             catch (ApiException e)// Handle sign-in errors
             {
-                Toast.makeText(this, "Google sign-in failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();// Display error message
+                Toast.makeText(this, "ההתחברות עם גוגל נכשלה: " + e.getMessage(), Toast.LENGTH_SHORT).show();// Display error message
             }
         }
     }

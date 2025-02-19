@@ -12,23 +12,27 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import android.util.Log;
 
 public class SharedListsActivity extends AppCompatActivity implements View.OnClickListener {
     private SharedListsViewModel viewModel;
     private ListView listView;
     private ProgressBar progressBar;
-    private ImageButton backButton, refreshButton;
+    private ImageButton backButton;
+    private ImageButton refreshButton;
     private String listsCount;
     private SharedListAdapter adapter; // Define adapter as a class-level variable
     private HashMap<Integer, Integer> positionMap;
-    private List<ListSaveObject> originalList;
+    private List<ListSharedObject> originalList;
     // Multiple selected categories
     private List<String> selectedCategories = null;
-    private Button filterButton,search_btn,record_btn;
+    private Button filterButton;
+    private ImageButton searchButton;
+    private ImageButton recordButton;
     private EditText searchEditText;
-
-
+    private ArrayList<Integer> indexes;
+    private boolean isRefreshClicked = false;
+    private boolean isSerachClicked = false;
+    private  String searchText;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -41,9 +45,9 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         filterButton = findViewById(R.id.filter);
         backButton = findViewById(R.id.back);
         refreshButton = findViewById(R.id.refresh);
-        search_btn = findViewById(R.id.search_btn);
+        searchButton = findViewById(R.id.search);
         searchEditText = findViewById(R.id.editText);
-        record_btn = findViewById(R.id.record_btn);
+        recordButton = findViewById(R.id.record);
 
 
         // Initialize ViewModel
@@ -57,14 +61,19 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
             if (Boolean.TRUE.equals(isLoading))
             {
                 // Optional: Show a loading indicator here
-                Toast.makeText(this, "Loading data...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "טוען נתונים...", Toast.LENGTH_SHORT).show();
             }
             else
             {
                 progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
                 // Observe lists data
-                if(selectedCategories == null && positionMap == null)
+                if((selectedCategories == null && positionMap == null) || isRefreshClicked || isSerachClicked)
                 {
+                    if (isRefreshClicked)
+                    {
+                        isRefreshClicked = false;
+                    }
+
                     viewModel.getListsLiveData().observe(this, lists ->
                     {
                         if (lists != null)
@@ -77,17 +86,28 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
                             // Sort by 'saves' in descending order (highest saves first)
                             Collections.sort(lists, (a, b) -> Integer.compare(b.getSaves(), a.getSaves()));
 
-                            // Store new indexes as keys and original indexes as values
-                            for (int newIndex = 0; newIndex < lists.size(); newIndex++)
-                            {
-                                int originalIndex = originalList.indexOf(lists.get(newIndex));
-                                positionMap.put(newIndex, originalIndex);
-                            }
-
                             adapter = new SharedListAdapter(this, lists);
+                            if (isSerachClicked)
+                            {
+                                isSerachClicked = false;
+                                for(int i = 0; i < adapter.getCount(); i++)
+                                {
+                                    if(!searchText.equals(adapter.getItem(i).getListName()))
+                                    {
+                                        adapter.remove(adapter.getItem(i));
+                                        i--;
+                                        listView.setAdapter(adapter);
+                                    }
+                                }
+                                if(adapter.getCount() == 0)
+                                {
+                                    Toast.makeText(SharedListsActivity.this, "לא נמצאה אף רשימה בשם המתאים\n ברשימות המשותפות", Toast.LENGTH_SHORT).show();
+                                }
+                            }
                             // Store new indexes as keys and original indexes as values
-                            for (int newIndex = 0; newIndex < lists.size(); newIndex++) {
-                                int originalIndex = originalList.indexOf(lists.get(newIndex));
+                            for (int newIndex = 0; newIndex < adapter.getCount(); newIndex++)
+                            {
+                                int originalIndex = originalList.indexOf(adapter.getItem(newIndex));
                                 positionMap.put(newIndex, originalIndex);
                             }
                             listView.setAdapter(adapter);
@@ -101,7 +121,7 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         // ListView item click listener
         listView.setOnItemClickListener((parent, view, position, id) ->
         {
-            ListSaveObject selectedItem = adapter.getItem(position); // Correct type
+            ListSharedObject selectedItem = adapter.getItem(position); // Correct type
             String selectedListName = selectedItem.getListName();
             Intent intent = new Intent(SharedListsActivity.this, SharedListsProductsActivity.class);
             intent.putExtra("LIST_NAME", selectedListName); // Pass the list name
@@ -112,18 +132,27 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
 
         // Set button listeners
         backButton.setOnClickListener(this);
-        refreshButton.setOnClickListener(v -> viewModel.getSharedLists());
+        refreshButton.setOnClickListener(v ->
+        {
+            isRefreshClicked = true;
+            viewModel.getSharedLists();
+        });
         filterButton.setOnClickListener(v -> showCategoryDialog());
-        record_btn.setOnClickListener(this);
+        recordButton.setOnClickListener(this);
 
-        search_btn.setOnClickListener(v -> {
+        searchButton.setOnClickListener(v ->
+        {
             // Get the text the user typed into the search box
-            String searchText = searchEditText.getText().toString().trim();
+            searchText = searchEditText.getText().toString().trim();
 
             // Show the text in a Toast message
-            if (!searchText.isEmpty()) {
-                Toast.makeText(SharedListsActivity.this, searchText, Toast.LENGTH_SHORT).show();
-            } else {
+            if (!searchText.isEmpty())
+            {
+                isSerachClicked = true;
+                viewModel.getSharedLists();
+            }
+            else
+            {
                 Toast.makeText(SharedListsActivity.this, "תיבת החיפוש ריקה", Toast.LENGTH_SHORT).show();
             }
         });
@@ -138,7 +167,7 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
             Intent intent = new Intent(this, MyListsActivity.class);
             startActivity(intent);
         }
-        else if (view == record_btn)
+        else if (view.getId() == R.id.record)
         {
 
             // Create an intent for speech recognition
@@ -162,8 +191,15 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
             if (categories != null)
             {
                 boolean[] checkedItems = new boolean[categories.size()];
+                if(categories.size() == 1 && categories.get(0).equals(""))
+                {
+                    categories.clear();
+                }
+                if(categories.size() == 2 && categories.get(0).equals(""))
+                {
+                    categories.remove(0);
+                }
                 String[] categoryArray = categories.toArray(new String[0]);
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("בחר קטגוריות");
                 builder.setMultiChoiceItems(categoryArray, checkedItems, (dialog, which, isChecked) ->
@@ -173,16 +209,21 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
                         if (selectedCategories == null)
                         {
                             selectedCategories = new ArrayList<>();
+                            indexes = new ArrayList<>();
                         }
                         if (!selectedCategories.contains(categoryArray[which]))
                         {
                             selectedCategories.add(categoryArray[which]);
+                            indexes.add(which);
                         }
                         List<String> updatedSelection = new ArrayList<>();
-                        for (int i = 0; i < categoryArray.length; i++) {
+                        indexes.clear();
+                        for (int i = 0; i < categoryArray.length; i++)
+                        {
                             if (checkedItems[i])
                             {
                                 updatedSelection.add(categoryArray[i]);
+                                indexes.add(i);
                             }
                         }
                         selectedCategories.clear();
@@ -219,14 +260,14 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
                         // Sort by 'saves' in descending order (highest saves first)
                         Collections.sort(filteredLists, (a, b) -> Integer.compare(b.getSaves(), a.getSaves()));
 
-                        // Store new indexes as keys and original indexes as values
-                        for (int newIndex = 0; newIndex < filteredLists.size(); newIndex++)
-                        {
-                            int originalIndex = originalList.indexOf(filteredLists.get(newIndex));
-                            positionMap.put(newIndex, originalIndex);
-                        }
                         adapter.clear();
                         adapter.addAll(filteredLists);
+                        // Store new indexes as keys and original indexes as values
+                        for (int newIndex = 0; newIndex < adapter.getCount(); newIndex++)
+                        {
+                            int originalIndex = originalList.indexOf(adapter.getItem(newIndex));
+                            positionMap.put(newIndex, originalIndex);
+                        }
                         listView.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
                         dialog.dismiss();
@@ -243,16 +284,14 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
                 {
                     if (selectedCategories != null && !selectedCategories.isEmpty())
                     {
-                        for (String category : selectedCategories)
-                        {
+
                             dialog.dismiss();
-                            viewModel.deleteCategory(category);
-                        }
-                        Toast.makeText(this, "Selected categories deleted successfully", Toast.LENGTH_SHORT).show();
+                            viewModel.deleteCategories(indexes,categories.size());
+                        Toast.makeText(this, "הקטגוריות המסומנות נמחקו בהצלחה", Toast.LENGTH_SHORT).show();
                     }
                     else
                     {
-                        Toast.makeText(this, "No categories selected for deletion", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "לא נבחרו קטגוריות למחיקה", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -275,13 +314,13 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
             if (!categoryName.isEmpty() && !categories.contains(categoryName))
             {
                 viewModel.addCategory(categoryName);
-                Toast.makeText(this, "Category added successfully", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "הקטגוריה נוספה בהצלחה", Toast.LENGTH_SHORT).show();
                 parentDialog.dismiss(); // Refresh parent dialog
                 showCategoryDialog();
             }
             else
             {
-                Toast.makeText(this, "Category already exists or name is empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "הקטגוריה כבר קיימת או שהשם ריק", Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton("ביטול", (dialog, which) -> dialog.dismiss());

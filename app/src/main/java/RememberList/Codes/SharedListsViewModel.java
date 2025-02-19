@@ -8,18 +8,17 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class SharedListsViewModel extends AndroidViewModel {
 
     private final Repository repository;
-    private final MutableLiveData<List<ListSaveObject>> listsLiveData = new MutableLiveData<>();
+    private final MutableLiveData<List<ListSharedObject>> listsLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<String>> categoriesLiveData = new MutableLiveData<>();
     private final MutableLiveData<Boolean> loadingLiveData = new MutableLiveData<>();
     private final MutableLiveData<String> errorLiveData = new MutableLiveData<>();
 
-    private final MutableLiveData<List<ListSaveObject>> listCategoriesLiveData = new MutableLiveData<>();
+    private final MutableLiveData<List<ListSharedObject>> listCategoriesLiveData = new MutableLiveData<>();
 
     /**
      * A map to track which category belongs to each list title:
@@ -50,7 +49,7 @@ public class SharedListsViewModel extends AndroidViewModel {
      *
      * @return LiveData containing the list of shared lists.
      */
-    public LiveData<List<ListSaveObject>> getListsLiveData()
+    public LiveData<List<ListSharedObject>> getListsLiveData()
     {
         return listsLiveData;
     }
@@ -64,7 +63,7 @@ public class SharedListsViewModel extends AndroidViewModel {
     {
         return loadingLiveData;
     }
-    public LiveData<List<ListSaveObject>> getlistCategoriesLiveData()
+    public LiveData<List<ListSharedObject>> getlistCategoriesLiveData()
     {
         return listCategoriesLiveData;
     }
@@ -138,14 +137,13 @@ public class SharedListsViewModel extends AndroidViewModel {
     /**
      * Deletes a category and refreshes the category list.
      *
-     * @param categoryName The name of the category to delete.
+     * @param indexes The indexes of the categories to delete.
      */
-    public void deleteCategory(String categoryName)
+    public void deleteCategories(ArrayList<Integer> indexes,int categoriesSize)
     {
         loadingLiveData.setValue(true); // Set loading state to true
-        // Add the category to the repository
-        repository.deleteCategory(categoryName, loadingLiveData, errorLiveData);
-        // Observe the loading state and reload the categories after the add operation completes
+        repository.deleteCategories(indexes,categoriesSize ,loadingLiveData, errorLiveData);
+        // Observe the loading state and reload the lists after the add operation completes
         loadingLiveData.observeForever(new Observer<Boolean>()
         {
             @Override
@@ -160,10 +158,6 @@ public class SharedListsViewModel extends AndroidViewModel {
             }
         });
     }
-
-    /**
-     * get shared lists from the repository and updates the LiveData.
-     */
     /**
      * get shared lists from the repository and updates the LiveData.
      */

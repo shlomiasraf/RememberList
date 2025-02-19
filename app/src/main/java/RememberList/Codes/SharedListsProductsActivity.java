@@ -65,7 +65,7 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
         // Validate that a valid list ID was received
         if (listKey == null || listKey.isEmpty())
         {
-            Toast.makeText(this, "Unable to display content - Missing list ID", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "חסר מזהה הרשימה", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
