@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -57,11 +58,26 @@ public class LoginActivity extends AppCompatActivity
         buttonRegister = findViewById(R.id.buttonRegister); // Register button
         buttonGoogleSignIn = findViewById(R.id.buttonGoogleSignIn);// Google sign-in button
 
-        // Observe changes in the ViewModel data:
+        // Observe user authentication status
         viewModel.getUserLiveData().observe(this, user -> {
-            if (user != null)
+            if (user != null) {
+                // Once the user is detected, check if they are an admin
+                viewModel.checkIfUserIsAdmin();
+            }
+        });
+        // Observe admin status separately (avoiding nesting)
+        viewModel.getIsAdminLiveData().observe(this, isAdmin ->
+        {
+            if (isAdmin)
             {
-                navigateToMain(); // Navigate to the main screen
+                showAdminLoginDialog(); // Show admin login dialog
+            }
+            else
+            {
+                Intent intent = new Intent(LoginActivity.this, MyListsActivity.class); // Create an intent for the main screen
+                intent.putExtra("IS_ADMIN", false); // Sending boolean extra
+                startActivity(intent); // Start the main screen activity
+                finish(); // Close the current activity// Navigate to regular user screen
             }
         });
 
@@ -121,11 +137,30 @@ public class LoginActivity extends AppCompatActivity
             }
         }
     }
-    // Function to navigate to the main screen
-    private void navigateToMain()
+    private void showAdminLoginDialog()
     {
-        Intent intent = new Intent(LoginActivity.this, MyListsActivity.class); // Create an intent for the main screen
-        startActivity(intent); // Start the main screen activity
-        finish(); // Close the current activity
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("סוג התחברות");
+        builder.setMessage("האם תרצה להתחבר כמנהל ולנהל רשימות משותפות או להתחבר כרגיל?");
+
+        builder.setPositiveButton("כמנהל", (dialog, which) -> {
+            // Proceed with admin login
+            Intent intent = new Intent(LoginActivity.this, AdminSharedListsActivity.class); // Create an intent for the main screen
+            startActivity(intent); // Start the main screen activity
+            finish(); // Close the current activity
+        });
+
+        builder.setNegativeButton("התחברות רגילה", (dialog, which) ->
+        {
+            // Proceed with regular login
+            Intent intent = new Intent(LoginActivity.this, MyListsActivity.class); // Create an intent for the main screen
+            intent.putExtra("IS_ADMIN", true); // Sending boolean extra
+            startActivity(intent); // Start the main screen activity
+            finish(); // Close the current activity
+        });
+
+        builder.setCancelable(false); // Prevents closing without selecting an option
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }

@@ -14,16 +14,21 @@ public class LoadingViewModel extends ViewModel
     // Firebase authentication instance
     private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
     // LiveData to observe user state (logged in or not)
-    private final MutableLiveData<FirebaseUser> userState = new MutableLiveData<>();
+    private final MutableLiveData<FirebaseUser> userLiveData = new MutableLiveData<>();
     // LiveData to observe loading state (e.g., showing or hiding a progress bar)
-    private final MutableLiveData<Boolean> loadingState = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> loadingLiveData = new MutableLiveData<>();
     // LiveData to observe error messages
-    private final MutableLiveData<String> errorState = new MutableLiveData<>();
+    private final MutableLiveData<String> errorLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> isAdminLiveData = new MutableLiveData<>();
     // Repository for handling data operations
     private Repository repository;
 
 
     // Initialize the ViewModel
+    public LiveData<Boolean> getIsAdminLiveData()
+    {
+        return isAdminLiveData;
+    }
     public void init(Context context)
     {
         // Create the repository with the given context (e.g., for SharedPreferences or database access)
@@ -36,49 +41,53 @@ public class LoadingViewModel extends ViewModel
     // Check the authentication state of the current user
     private void checkUserState()
     {
-        loadingState.setValue(true);  // Indicate that a loading process has started
+        loadingLiveData.setValue(true);  // Indicate that a loading process has started
         FirebaseUser currentUser = mAuth.getCurrentUser(); // Get the currently signed-in user
 
         if (currentUser != null) // If a user is signed in
         {
             // Reload user data to ensure it is up-to-date
             currentUser.reload().addOnCompleteListener(task -> {
-                loadingState.setValue(false);  // Indicate that loading has completed
+                loadingLiveData.setValue(false);  // Indicate that loading has completed
                 if (task.isSuccessful()) // If reload was successful
                 {
-                    userState.setValue(currentUser);  // Update user state with the current user
+                    userLiveData.setValue(currentUser);  // Update user state with the current user
                 }
                 else // If reload failed
                 {
                     mAuth.signOut();  // Sign out the user
-                    userState.setValue(null);// Clear the user state
-                    errorState.setValue("Failed to reload user data. Signing out.");// Notify about the error
+                    userLiveData.setValue(null);// Clear the user state
+                    errorLiveData.setValue("Failed to reload user data. Signing out.");// Notify about the error
                 }
             });
         }
         else // If no user is signed in
         {
-            loadingState.setValue(false); // Indicate that loading has completed
-            userState.setValue(null);  // Clear the user state
+            loadingLiveData.setValue(false); // Indicate that loading has completed
+            userLiveData.setValue(null);  // Clear the user state
         }
     }
-
-    // Expose the user state as LiveData so it can be observed by the UI
-    public LiveData<FirebaseUser> getUserState()
+    public void checkIfUserIsAdmin()
     {
-        return userState;
+        loadingLiveData.setValue(true); // Set loading state to true
+        repository.checkIfUserIsAdmin(isAdminLiveData, loadingLiveData, errorLiveData);
+    }
+    // Expose the user state as LiveData so it can be observed by the UI
+    public LiveData<FirebaseUser> getUserLiveData()
+    {
+        return userLiveData;
     }
 
     // Expose the loading state as LiveData so it can be observed by the UI
-    public LiveData<Boolean> getLoadingState()
+    public LiveData<Boolean> geLoadingLiveData()
     {
-        return loadingState;
+        return loadingLiveData;
     }
 
     // Expose the error state as LiveData so it can be observed by the UI
-    public LiveData<String> getErrorState()
+    public LiveData<String> getErrorLiveData()
     {
-        return errorState;
+        return errorLiveData;
     }
 
 }

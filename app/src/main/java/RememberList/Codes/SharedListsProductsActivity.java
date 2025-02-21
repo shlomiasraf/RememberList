@@ -39,6 +39,7 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
     private String listKey; // Declare listKey as a class-level variable
     private String listsCount;
     private String listName; // Declare listName as a class-level variable
+    private boolean isAdmin = false; // Track if user is admin
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +61,7 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
         listName = getIntent().getStringExtra("LIST_NAME");
         listKey = getIntent().getStringExtra("LIST_KEY");
         listsCount = getIntent().getStringExtra("LIST_COUNT");
+        isAdmin = getIntent().getBooleanExtra("IS_ADMIN",false); // Get the key of the list passed via Intent
         title.setText(listName);
 
         // Validate that a valid list ID was received
@@ -98,6 +100,10 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
         if (view.getId() == R.id.back)
         {
             Intent intent = new Intent(this, SharedListsActivity.class);
+            if(isAdmin)
+            {
+                intent.putExtra("IS_ADMIN", true); // Sending boolean extra
+            }
             startActivity(intent);
         }
         else if(view.getId() == R.id.save)

@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -20,7 +19,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.lifecycle.ViewModelProvider;
-import android.widget.TextView;
+
 import java.util.ArrayList;
 
 /**
@@ -30,7 +29,7 @@ import java.util.ArrayList;
 public class ListProductsActivity extends AppCompatActivity implements View.OnClickListener
 {
     private ListProductsViewModel viewModel; // ViewModel for managing data
-    private ListAdapter boxAdapter; // Adapter for the ListView
+    private ListProductsAdapter boxAdapter; // Adapter for the ListView
     private EditText editText; // Input field for adding products
     private ListView lvMain; // ListView for displaying products
     private ArrayList<Product> selectedProducts = new ArrayList<>(); // List to hold selected products for deletion
@@ -46,6 +45,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
 
 
     private ArrayList<String> categories = new ArrayList<>();
+    private boolean isAdmin = false; // Track if user is admin
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -68,6 +68,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         viewModel = new ViewModelProvider(this).get(ListProductsViewModel.class);
         listName = getIntent().getStringExtra("LIST_NAME"); // Get the list name passed via Intent
         listKey = getIntent().getStringExtra("LIST_KEY"); // Get the key of the list passed via Intent
+        isAdmin = getIntent().getBooleanExtra("IS_ADMIN",false); // Get the key of the list passed via Intent
         TextView title = findViewById(R.id.textview);
         title.setText(listName);
         viewModel.init(listName,listKey); // Initialize ViewModel with the list name
@@ -76,11 +77,11 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
         {
             if (products != null && !products.get(0).name.equals(""))
             {
-                boxAdapter = new ListAdapter(ListProductsActivity.this, listName+listKey, new ArrayList<>(products),true); // Ensure a fresh ArrayList
+                boxAdapter = new ListProductsAdapter(ListProductsActivity.this, listName+listKey, new ArrayList<>(products),true); // Ensure a fresh ArrayList
             }
             else
             {
-                boxAdapter = new ListAdapter(ListProductsActivity.this, listName + listKey, new ArrayList<>(), true);
+                boxAdapter = new ListProductsAdapter(ListProductsActivity.this, listName + listKey, new ArrayList<>(), true);
             }
             lvMain.setAdapter(boxAdapter); // Set the adapter for the ListView
         });
@@ -133,6 +134,10 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
             checkAndShowNotification();
             // Navigate back to MyListsActivity
             Intent intent = new Intent(this, MyListsActivity.class);
+            if(isAdmin)
+            {
+                intent.putExtra("IS_ADMIN", true); // Sending boolean extra
+            }
             startActivity(intent);
         }
         else if (view.getId() == R.id.share)
@@ -286,8 +291,8 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
     private void showDeleteConfirmationDialog()
     {
         new AlertDialog.Builder(this)
-                .setMessage("Are you sure you want to delete the selected items?") // Dialog message
-                .setPositiveButton("Delete", (dialog, which) ->
+                .setMessage("האם אתה בטוח שברצונך למחוק את הערכים האלו?") // Dialog message
+                .setPositiveButton("מחק", (dialog, which) ->
                 {
                     // Collect selected products
                     for (int i = 0; i < boxAdapter.getCount(); i++)
@@ -311,7 +316,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
                     }
 
                 })
-                .setNegativeButton("Cancel", null) // Do nothing on cancel
+                .setNegativeButton("ביטול", null) // Do nothing on cancel
                 .show();
     }
 

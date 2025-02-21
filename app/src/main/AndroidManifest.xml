@@ -29,6 +29,8 @@
 
         <activity android:name=".LoginActivity"
             android:exported="false"/>
+        <activity android:name=".AdminSharedListsActivity"
+            android:exported="false"/>
         <activity android:name=".MyListsActivity"
             android:exported="false"/>
         <activity android:name=".ListProductsActivity"
@@ -37,7 +39,6 @@
             android:exported="false"/>
         <activity android:name=".SharedListsProductsActivity"
             android:exported="false"/>
-
 
     </application>
 

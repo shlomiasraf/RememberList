@@ -25,14 +25,24 @@ public class LoadingActivity extends AppCompatActivity
 		viewModel.init(this);
 
 		// Observe changes in the user authentication state
-		viewModel.getUserState().observe(this, new Observer<FirebaseUser>()
+		viewModel.getUserLiveData().observe(this, new Observer<FirebaseUser>()
 		{
 			@Override
 			public void onChanged(FirebaseUser user)
 			{
 				if (user != null) // If a user is logged in
 				{
-					navigateToMainScreen(); // Navigate to the main activity
+					viewModel.checkIfUserIsAdmin();
+					viewModel.getIsAdminLiveData().observe(LoadingActivity.this, isAdmin -> {
+						if (isAdmin) {
+							Intent intent = new Intent(LoadingActivity.this, MyListsActivity.class);
+							intent.putExtra("IS_ADMIN", true); // Sending boolean extra
+							startActivity(intent);// Start the main activity
+							finish();  // Close the current activity to prevent going back
+						} else {
+							navigateToMainScreen(); // Navigate to the main activity
+						}
+					});
 				}
 				else// If no user is logged in
 				{

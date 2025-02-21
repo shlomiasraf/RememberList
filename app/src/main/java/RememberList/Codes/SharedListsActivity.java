@@ -33,6 +33,8 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
     private boolean isRefreshClicked = false;
     private boolean isSerachClicked = false;
     private  String searchText;
+    private boolean isAdmin = false; // Track if user is admin
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -53,6 +55,7 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(SharedListsViewModel.class);
         listsCount = getIntent().getStringExtra("LIST_COUNT");
+        isAdmin = getIntent().getBooleanExtra("IS_ADMIN",false); // Get the key of the list passed via Intent
         viewModel.getSharedLists();
 
         // Observe loading state
@@ -124,6 +127,10 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
             ListSharedObject selectedItem = adapter.getItem(position); // Correct type
             String selectedListName = selectedItem.getListName();
             Intent intent = new Intent(SharedListsActivity.this, SharedListsProductsActivity.class);
+            if(isAdmin)
+            {
+                intent.putExtra("IS_ADMIN", true); // Sending boolean extra
+            }
             intent.putExtra("LIST_NAME", selectedListName); // Pass the list name
             intent.putExtra("LIST_KEY", String.valueOf(positionMap.get(position))); // Add list ID to intent
             intent.putExtra("LIST_COUNT", listsCount);
@@ -165,6 +172,10 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
         {
             // Return to the previous activity
             Intent intent = new Intent(this, MyListsActivity.class);
+            if(isAdmin)
+            {
+                intent.putExtra("IS_ADMIN", true); // Sending boolean extra
+            }
             startActivity(intent);
         }
         else if (view.getId() == R.id.record)

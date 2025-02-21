@@ -19,13 +19,7 @@
             android:src="@drawable/back"
             android:contentDescription="Back Button" />
 
-        <TextView
-            android:id="@+id/textview"
-            android:layout_width="240dp"
-            android:layout_height="50dp"
-            android:textSize="18sp"
-            android:gravity="center" />
-
+        <!-- Share Button -->
         <ImageButton
             android:id="@+id/share"
             android:layout_width="50dp"
@@ -33,6 +27,16 @@
             android:src="@drawable/share"
             android:contentDescription="Share Button" />
 
+        <!-- TextView with dynamic width -->
+        <TextView
+            android:id="@+id/textview"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:layout_weight="1" />
+
+        <!-- Delete Button -->
         <ImageButton
             android:id="@+id/delete"
             android:layout_width="50dp"
@@ -80,7 +84,7 @@
 
         <EditText
             android:id="@+id/editText"
-            android:layout_width="260dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="0dp"
             android:layout_marginTop="0dp"

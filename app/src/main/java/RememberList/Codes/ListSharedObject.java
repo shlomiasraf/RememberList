@@ -56,4 +56,16 @@ public class ListSharedObject
         }
         return false;
     }
+    @Override
+    public String toString()
+    {
+        String toString = listName + ", ";
+        for(String category : categories)
+        {
+            toString += category + ", ";
+        }
+        toString += "שמירות " + String.valueOf(saves);
+        return toString;
+    }
+
 }

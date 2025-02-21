@@ -2,8 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/l2"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:background="@drawable/background"
     android:orientation="vertical">
 
@@ -14,13 +14,19 @@
 
         <Button
             android:id="@+id/signOutButton"
-            android:layout_width="98dp"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="התנתק" />
-
+        <Button
+            android:id="@+id/adminModeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="מצב מנהל"
+            android:visibility="gone"
+            />
         <TextView
-            android:layout_width="314dp"
-            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="center"
             android:text="הרשימות שלי"
             android:textSize="14sp" />
@@ -66,7 +72,7 @@
             android:padding="11dp"/>
         <EditText
             android:id="@+id/editText"
-            android:layout_width="260dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="0dp"
             android:layout_marginTop="0dp"

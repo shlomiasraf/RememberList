@@ -20,21 +20,27 @@ public class LoginViewModel extends AndroidViewModel
     private final MutableLiveData<FirebaseUser> userLiveData; // Holds the current logged-in user
     private final MutableLiveData<String> errorLiveData; // Holds error messages for UI display
     private final MutableLiveData<Boolean> loadingLiveData; // Indicates whether a process is loading
-
+    private final MutableLiveData<Boolean> isAdminLiveData;
     // Constructor: Initializes the ViewModel and its components
-    public LoginViewModel(@NonNull Application application) {
+    public LoginViewModel(@NonNull Application application)
+    {
         super(application);
         repository = new Repository(application);  // Initialize the repository with the application context
         userLiveData = new MutableLiveData<>();// Initialize user LiveData
         errorLiveData = new MutableLiveData<>(); // Initialize error LiveData
         loadingLiveData = new MutableLiveData<>(); // Initialize loading LiveData
+        isAdminLiveData = new MutableLiveData<>(); // Initialize admin LiveData
     }
 
     // Expose user LiveData for observing changes in the logged-in user
-    public LiveData<FirebaseUser> getUserLiveData() {
+    public LiveData<FirebaseUser> getUserLiveData()
+    {
         return userLiveData;
     }
-
+    public LiveData<Boolean> getIsAdminLiveData()
+    {
+        return isAdminLiveData;
+    }
     // Expose error LiveData for observing error messages
     public LiveData<String> getErrorLiveData() {
         return errorLiveData;
@@ -81,26 +87,10 @@ public class LoginViewModel extends AndroidViewModel
         repository.loginWithGoogle(account, userLiveData, errorLiveData, loadingLiveData);
     }
 
-    // Method to log out the current user
-    public void logout()
-    {
-        repository.logout();// Call the repository's logout method
-        userLiveData.setValue(null); // Clear the current user from LiveData
-    }
-
     // Method to check if a user is already logged in
-    public void checkIfUserIsLoggedIn()
+    public void checkIfUserIsAdmin()
     {
         loadingLiveData.setValue(true); // Set loading state to true
-        FirebaseUser currentUser = repository.getCurrentUser(); // Get the currently logged-in user
-        if (currentUser != null)// If a user is logged in
-        {
-            userLiveData.setValue(currentUser);  // Update the user LiveData
-        }
-        else // If no user is logged in
-        {
-            errorLiveData.setValue("No user is currently logged in");// Set error message
-        }
-        loadingLiveData.setValue(false);// Set loading state to false
+        repository.checkIfUserIsAdmin(isAdminLiveData, loadingLiveData, errorLiveData);
     }
 }

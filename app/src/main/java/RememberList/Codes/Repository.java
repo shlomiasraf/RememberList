@@ -121,7 +121,8 @@ public class Repository {
      *
      * @return The current FirebaseUser.
      */
-    public FirebaseUser getCurrentUser() {
+    public FirebaseUser getCurrentUser()
+    {
         return mAuth.getCurrentUser();
     }
 
@@ -910,8 +911,143 @@ public class Repository {
 
     public void ChangeProductBox(Product product,int position, String keyPrefix)
     {
+
         getValuesRef().child(keyPrefix).child(String.valueOf(position)).child("isChecked").setValue(product.isChecked());
     }
+    public void checkIfUserIsAdmin(MutableLiveData<Boolean> isAdminLiveData, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData) {
+        // Start loading state to indicate an ongoing process
+        loadingLiveData.setValue(true);
+
+        // Get the currently authenticated user
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+
+        if (currentUser == null) {
+            // If no user is logged in, return false and stop loading
+            isAdminLiveData.setValue(false);
+            loadingLiveData.setValue(false);
+            errorLiveData.setValue("No user logged in.");
+            return;
+        }
+
+        // Retrieve the user's email and format it for Firebase
+        String userEmail = currentUser.getEmail();
+        if (userEmail == null || userEmail.isEmpty()) {
+            isAdminLiveData.setValue(false);
+            loadingLiveData.setValue(false);
+            errorLiveData.setValue("User email not found.");
+            return;
+        }
+
+        // Convert email to Firebase-compatible format (replace "." with "_")
+        String emailNode = userEmail.replace(".", "_");
+
+        // Reference to the specific user's admin status
+        DatabaseReference adminRef = FirebaseDatabase.getInstance().getReference("adminUsers").child(emailNode);
+
+        // Check if the key exists in Firebase
+        adminRef.addListenerForSingleValueEvent(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(DataSnapshot snapshot)
+            {
+                if (snapshot.exists() && Boolean.TRUE.equals(snapshot.getValue(Boolean.class)))
+                {
+                    // If the key exists and its value is true, the user is an admin
+                    isAdminLiveData.setValue(true);
+                } else {
+                    // If the key does not exist or the value is not true, the user is not an admin
+                    isAdminLiveData.setValue(false);
+                }
+                loadingLiveData.setValue(false);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Handle Firebase errors
+                isAdminLiveData.setValue(false);
+                loadingLiveData.setValue(false);
+                errorLiveData.setValue("Error checking admin status: " + error.getMessage());
+            }
+        });
+    }
+    public void deleteSharedLists(List<Integer> indexes, List<String> listNames, int sharedListsSize, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData) {
+        // Set loading state to true before starting the operation
+        loadingLiveData.setValue(true);
+        DatabaseReference sharedListsRef = getSharedListsRef();
+        DatabaseReference sharedValuesRef = getSharedValuesRef();
+        Boolean listsEmpty = false;
+        // Remove the values at the given indexes
+        for (int i = 0; i < indexes.size(); i++)
+        {
+            if (sharedListsSize == indexes.size() && i == indexes.size()-1)
+            {
+
+                sharedListsRef.child(String.valueOf(indexes.get(i))).setValue("");
+                listsEmpty = true;
+                loadingLiveData.setValue(false);
+            }
+            else
+            {
+                sharedValuesRef.child(listNames.get(i)+String.valueOf(indexes.get(i))).removeValue();
+                sharedListsRef.child(String.valueOf(indexes.get(i))).removeValue();
+            }
+        }
+        sharedListsRef.addListenerForSingleValueEvent(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(DataSnapshot snapshot)
+            {
+                if (snapshot.exists())
+                {
+                    int counter = 0; // Keeps track of how many gaps exist (null values)
+
+                    // Iterate through the remaining items
+                    for (int i = indexes.get(0); i < snapshot.getChildrenCount() + indexes.size(); i++)
+                    {
+                        String listName = snapshot.child(String.valueOf(i)).child("Name").getValue(String.class);
+                        String userName = snapshot.child(String.valueOf(i)).child("CreatedBy").getValue(String.class);
+                        int saves = snapshot.child(String.valueOf(i)).child("listSaveCount").getValue(Integer.class);
+                        List<String> categories = snapshot.child(String.valueOf(i)).child("Categories").getValue(new GenericTypeIndicator<List<String>>() {});
+                        Map<String, Object> valueWithBoolean = new HashMap<>();
+                        valueWithBoolean.put("Categories",categories);
+                        valueWithBoolean.put("CreatedBy", userName);
+                        valueWithBoolean.put("Name",listName);
+                        valueWithBoolean.put("listSaveCount",saves);
+                        if (userName == null)
+                        {
+                            // Increment the counter for null (deleted) values
+                            counter++;
+                        }
+                        else
+                        {
+                            // Move the current value to fill the gap
+                            sharedListsRef.child(String.valueOf(i - counter)).setValue(valueWithBoolean);
+                            // Remove the old key to avoid duplicates
+                            sharedListsRef.child(String.valueOf(i)).removeValue();
+                        }
+                    }
+
+                    // Notify completion of loading
+                    loadingLiveData.setValue(false);
+                }
+                else
+                {
+                    // If the snapshot doesn't exist, notify error
+                    errorLiveData.setValue("No data found in the list.");
+                    loadingLiveData.setValue(false);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError error)
+            {
+                // Handle database access errors
+                errorLiveData.setValue("Failed to access database: " + error.getMessage());
+            }
+        });
+
+    }
+
 
     public DatabaseReference getListsRef()
     {

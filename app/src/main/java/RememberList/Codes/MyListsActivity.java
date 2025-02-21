@@ -27,7 +27,8 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
     private ImageButton recordButton;
     private String selectedList; // Currently selected list for deletion
     private int positionToDelete;
-
+    private Button adminModeButton; // Admin mode button
+    private boolean isAdmin = false; // Track if user is admin
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -41,9 +42,15 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         list = findViewById(R.id.listView);
         signOutButton = findViewById(R.id.signOutButton);
         recordButton = findViewById(R.id.record);
+        adminModeButton = findViewById(R.id.adminModeButton); // Initialize admin button
 
         // Initialize ViewModel
         viewModel = new ViewModelProvider(this).get(MyListsViewModel.class);
+        isAdmin = getIntent().getBooleanExtra("IS_ADMIN",false); // Get the key of the list passed via Intent
+        if (isAdmin)
+        {
+            adminModeButton.setVisibility(View.VISIBLE); // Show the button only if admin
+        }
 
         // Observe error messages to display them as Toast messages
         viewModel.getErrorLiveData().observe(this, error -> {
@@ -88,6 +95,7 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         sharelists.setOnClickListener(this);
         signOutButton.setOnClickListener(this);
         recordButton.setOnClickListener(this);
+        adminModeButton.setOnClickListener(this);
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -108,6 +116,10 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         list.setOnItemClickListener((parent, view, position, id) -> {
             selectedList = adapter.getItem(position);
             Intent intent = new Intent(this, ListProductsActivity.class);
+            if(isAdmin)
+            {
+                intent.putExtra("IS_ADMIN", true); // Sending boolean extra
+            }
             intent.putExtra("LIST_NAME", selectedList); // Pass the list name to the next activity
             intent.putExtra("LIST_KEY", String.valueOf(position));
             startActivity(intent);
@@ -156,6 +168,10 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
         {
             // Navigate to SharedListsActivity
             Intent intent = new Intent(this, SharedListsActivity.class);
+            if(isAdmin)
+            {
+                intent.putExtra("IS_ADMIN", true); // Sending boolean extra
+            }
             intent.putExtra("LIST_COUNT", String.valueOf(adapter.getCount()));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear activity stack
             startActivity(intent);
@@ -173,8 +189,12 @@ public class MyListsActivity extends AppCompatActivity implements View.OnClickLi
 
             // Start the speech recognition activity
             startActivityForResult(intent, 100);
-
-
+        }
+        if (view == adminModeButton)
+        {
+            // Navigate to Admin Shared Lists Activity
+            Intent intent = new Intent(this, AdminSharedListsActivity.class);
+            startActivity(intent);
         }
     }
 
