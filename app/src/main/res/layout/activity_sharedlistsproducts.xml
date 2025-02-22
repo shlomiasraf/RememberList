@@ -27,7 +27,8 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/background"
-            android:src="@drawable/save" />
+            android:src="@drawable/save"
+            android:visibility="gone"/>
     </LinearLayout>
 
 

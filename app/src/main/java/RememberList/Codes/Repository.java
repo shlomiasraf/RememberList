@@ -626,39 +626,79 @@ public class Repository {
      * @param errorLiveData LiveData to capture error messages.
      */
     public void deleteList(String listName, String key, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData) {
-        try {
-            // Set loading state to true before starting the operation
-            loadingLiveData.setValue(true);
-
-            // Attempt to remove values from the database
-            getListsRef().child(key).removeValue()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            getValuesRef().child(listName + key).removeValue()
-                                    .addOnCompleteListener(task2 -> {
-                                        if (task2.isSuccessful()) {
-                                            // Success, set loading state to false and clear any errors
-                                            loadingLiveData.setValue(false);
-                                        } else {
-                                            // If removing from getValuesRef() failed, set an error message
-                                            loadingLiveData.setValue(false);
-                                            errorLiveData.setValue("Failed to delete list from values reference.");
-                                        }
-                                    });
-                        } else {
-                            // If removing from getListsRef() failed, set an error message
-                            loadingLiveData.setValue(false);
-                            errorLiveData.setValue("Failed to delete list from lists reference.");
+        // Set loading state to true before starting the operation
+        loadingLiveData.setValue(true);
+        DatabaseReference ListsRef = getListsRef();
+        DatabaseReference valuesRef = getValuesRef();
+        ListsRef.child(key).removeValue();
+        valuesRef.child(listName + key).removeValue();
+        ListsRef.addListenerForSingleValueEvent(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(DataSnapshot snapshot)
+            {
+                if (snapshot.exists())
+                {
+                    int counter = 0; // Keeps track of how many gaps exist (null values)
+                    // Iterate through the remaining items
+                    for (int i = Integer.valueOf(key); i < snapshot.getChildrenCount() + 1; i++)
+                    {
+                        String listName = snapshot.child(String.valueOf(i)).getValue(String.class);
+                        if (listName == null)
+                        {
+                            // Increment the counter for null (deleted) values
+                            counter++;
                         }
-                    });
+                        else
+                        {
+                            // Move the current value to fill the gap
+                            ListsRef.child(String.valueOf(i - counter)).setValue(listName);
 
-        } catch (Exception e) {
-            // Handle any unexpected exceptions
-            loadingLiveData.setValue(false);
-            errorLiveData.setValue("Failed to delete list: " + e.getMessage());
-        }
+                            // Move the values from sharedValuesRef as well
+                            String oldValuesKey = listName + i;
+                            String newValuesKey = listName + (i - counter);
+
+                            valuesRef.child(oldValuesKey).addListenerForSingleValueEvent(new ValueEventListener()
+                            {
+                                @Override
+                                public void onDataChange(DataSnapshot valueSnapshot)
+                                {
+                                    if (valueSnapshot.exists())
+                                    {
+                                        valuesRef.child(newValuesKey).setValue(valueSnapshot.getValue(), (databaseError, databaseReference) -> {
+                                            if (databaseError == null)
+                                            {
+                                                // Remove the old key to avoid duplicates
+                                                valuesRef.child(oldValuesKey).removeValue();
+                                            }
+                                        });
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(DatabaseError databaseError)
+                                {
+                                    // Notify completion of loading
+                                    loadingLiveData.setValue(false);
+                                    System.out.println("Error moving shared values: " + databaseError.getMessage());
+                                }
+                            });
+                            // Remove the old key to avoid duplicates
+                            ListsRef.child(String.valueOf(i)).removeValue();
+                        }
+                    }
+                    // Notify completion of loading
+                    loadingLiveData.setValue(false);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError error)
+            {
+                // Notify completion of loading
+                loadingLiveData.setValue(false);
+                System.out.println("Error: " + error.getMessage());
+            }
+        });
     }
-
     /**
      * Deletes a value from a specific list in Firebase and shifts subsequent keys to maintain a continuous sequence.
      *
@@ -701,10 +741,13 @@ public class Repository {
                         // Iterate through the remaining items
                         for (int i = indexes[0]; i < snapshot.getChildrenCount() + indexes.length; i++) {
                             String value = snapshot.child(String.valueOf(i)).child("value").getValue(String.class);
-                            if (value == null) {
+                            if (value == null)
+                            {
                                 // Increment the counter for null (deleted) values
                                 counter++;
-                            } else {
+                            }
+                            else
+                            {
                                 Map<String, Object> valueWithBoolean = new HashMap<>();
                                 valueWithBoolean.put("value", value);
                                 valueWithBoolean.put("isChecked", snapshot.child(String.valueOf(i)).child("isChecked").getValue(Boolean.class));
@@ -971,27 +1014,20 @@ public class Repository {
             }
         });
     }
-    public void deleteSharedLists(List<Integer> indexes, List<String> listNames, int sharedListsSize, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData) {
+    public void deleteSharedLists(List<Integer> indexes, List<String> listNames, MutableLiveData<Boolean> loadingLiveData, MutableLiveData<String> errorLiveData)
+    {
         // Set loading state to true before starting the operation
         loadingLiveData.setValue(true);
         DatabaseReference sharedListsRef = getSharedListsRef();
         DatabaseReference sharedValuesRef = getSharedValuesRef();
-        Boolean listsEmpty = false;
+
         // Remove the values at the given indexes
         for (int i = 0; i < indexes.size(); i++)
         {
-            if (sharedListsSize == indexes.size() && i == indexes.size()-1)
-            {
-
-                sharedListsRef.child(String.valueOf(indexes.get(i))).setValue("");
-                listsEmpty = true;
-                loadingLiveData.setValue(false);
-            }
-            else
-            {
-                sharedValuesRef.child(listNames.get(i)+String.valueOf(indexes.get(i))).removeValue();
-                sharedListsRef.child(String.valueOf(indexes.get(i))).removeValue();
-            }
+                String valuesKey = listNames.get(i) + String.valueOf(indexes.get(i));
+                String listsKey = String.valueOf(indexes.get(i));
+                sharedValuesRef.child(valuesKey).removeValue();
+                sharedListsRef.child(listsKey).removeValue();
         }
         sharedListsRef.addListenerForSingleValueEvent(new ValueEventListener()
         {
@@ -1001,53 +1037,75 @@ public class Repository {
                 if (snapshot.exists())
                 {
                     int counter = 0; // Keeps track of how many gaps exist (null values)
-
                     // Iterate through the remaining items
                     for (int i = indexes.get(0); i < snapshot.getChildrenCount() + indexes.size(); i++)
                     {
                         String listName = snapshot.child(String.valueOf(i)).child("Name").getValue(String.class);
-                        String userName = snapshot.child(String.valueOf(i)).child("CreatedBy").getValue(String.class);
-                        int saves = snapshot.child(String.valueOf(i)).child("listSaveCount").getValue(Integer.class);
-                        List<String> categories = snapshot.child(String.valueOf(i)).child("Categories").getValue(new GenericTypeIndicator<List<String>>() {});
-                        Map<String, Object> valueWithBoolean = new HashMap<>();
-                        valueWithBoolean.put("Categories",categories);
-                        valueWithBoolean.put("CreatedBy", userName);
-                        valueWithBoolean.put("Name",listName);
-                        valueWithBoolean.put("listSaveCount",saves);
-                        if (userName == null)
+                        if (listName == null)
                         {
                             // Increment the counter for null (deleted) values
                             counter++;
                         }
                         else
                         {
+                            String userName = snapshot.child(String.valueOf(i)).child("CreatedBy").getValue(String.class);
+                            int saves = snapshot.child(String.valueOf(i)).child("listSaveCount").getValue(Integer.class);
+                            List<String> categories = snapshot.child(String.valueOf(i)).child("Categories").getValue(new GenericTypeIndicator<List<String>>() {});
+                            // Create a map to store the values
+                            Map<String, Object> sharedObject = new HashMap<>();
+                            sharedObject.put("Categories", categories);
+                            sharedObject.put("CreatedBy", userName);
+                            sharedObject.put("Name", listName);
+                            sharedObject.put("listSaveCount", saves);
+
                             // Move the current value to fill the gap
-                            sharedListsRef.child(String.valueOf(i - counter)).setValue(valueWithBoolean);
+                            sharedListsRef.child(String.valueOf(i - counter)).setValue(sharedObject);
+
+                            // Move the values from sharedValuesRef as well
+                            String oldValuesKey = listName + i;
+                            String newValuesKey = listName + (i - counter);
+
+                            sharedValuesRef.child(oldValuesKey).addListenerForSingleValueEvent(new ValueEventListener()
+                            {
+                                @Override
+                                public void onDataChange(DataSnapshot valueSnapshot)
+                                {
+                                    if (valueSnapshot.exists())
+                                    {
+                                        sharedValuesRef.child(newValuesKey).setValue(valueSnapshot.getValue(), (databaseError, databaseReference) -> {
+                                            if (databaseError == null)
+                                            {
+                                                // Remove the old key to avoid duplicates
+                                                sharedValuesRef.child(oldValuesKey).removeValue();
+                                            }
+                                        });
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(DatabaseError databaseError)
+                                {
+                                    // Notify completion of loading
+                                    loadingLiveData.setValue(false);
+                                    System.out.println("Error moving shared values: " + databaseError.getMessage());
+                                }
+                            });
                             // Remove the old key to avoid duplicates
                             sharedListsRef.child(String.valueOf(i)).removeValue();
                         }
                     }
-
                     // Notify completion of loading
-                    loadingLiveData.setValue(false);
-                }
-                else
-                {
-                    // If the snapshot doesn't exist, notify error
-                    errorLiveData.setValue("No data found in the list.");
                     loadingLiveData.setValue(false);
                 }
             }
             @Override
             public void onCancelled(DatabaseError error)
             {
-                // Handle database access errors
-                errorLiveData.setValue("Failed to access database: " + error.getMessage());
+                // Notify completion of loading
+                loadingLiveData.setValue(false);
+                System.out.println("Error: " + error.getMessage());
             }
         });
-
     }
-
 
     public DatabaseReference getListsRef()
     {

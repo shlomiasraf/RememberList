@@ -61,7 +61,7 @@ public class AdminSharedListsViewModel extends AndroidViewModel {
         loadingLiveData.setValue(true);
         try
         {
-            repository.deleteSharedLists(indexesToDelete, listsToDelete, sharedListsSize, loadingLiveData, errorLiveData);
+            repository.deleteSharedLists(indexesToDelete, listsToDelete, loadingLiveData, errorLiveData);
             // Observe the loading state and reload the lists after the add operation completes
             loadingLiveData.observeForever(new Observer<Boolean>()
             {

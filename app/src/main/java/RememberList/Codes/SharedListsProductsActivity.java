@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -40,7 +41,8 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
     private String listsCount;
     private String listName; // Declare listName as a class-level variable
     private boolean isAdmin = false; // Track if user is admin
-
+    private boolean fromAdmin = false;
+    private ImageButton saveButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +64,7 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
         listKey = getIntent().getStringExtra("LIST_KEY");
         listsCount = getIntent().getStringExtra("LIST_COUNT");
         isAdmin = getIntent().getBooleanExtra("IS_ADMIN",false); // Get the key of the list passed via Intent
+        fromAdmin = getIntent().getBooleanExtra("From_AdminMode",false); // Get the key of the list passed via Intent
         title.setText(listName);
 
         // Validate that a valid list ID was received
@@ -92,21 +95,34 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
 
         //UI - listeners
         findViewById(R.id.back).setOnClickListener(this);
-        findViewById(R.id.save).setOnClickListener(this);
+        saveButton = findViewById(R.id.save);
+        saveButton.setOnClickListener(this);
+        if (!fromAdmin)
+        {
+            saveButton.setVisibility(View.VISIBLE); // Show the button only if admin
+        }
     }
     @Override
     public void onClick(View view)
     {
         if (view.getId() == R.id.back)
         {
-            Intent intent = new Intent(this, SharedListsActivity.class);
+            Intent intent;
+            if (fromAdmin)
+            {
+                intent = new Intent(this, AdminSharedListsActivity.class);
+            }
+            else
+            {
+                intent = new Intent(this, SharedListsActivity.class);
+            }
             if(isAdmin)
             {
                 intent.putExtra("IS_ADMIN", true); // Sending boolean extra
             }
             startActivity(intent);
         }
-        else if(view.getId() == R.id.save)
+        else if(view.getId() == R.id.save && !fromAdmin)
         {
             showSaveOptionsDialog();
         }

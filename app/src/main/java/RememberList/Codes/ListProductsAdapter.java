@@ -88,15 +88,19 @@ public class ListProductsAdapter extends BaseAdapter
 
     // CheckBox state change listener to update the product's box status and apply strike-through to the TextView
     OnCheckedChangeListener myCheckChangList = new OnCheckedChangeListener() {
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+        {
             int position = (Integer) buttonView.getTag();
             Product product = getProduct(position);
 
-            if (product != null)
-            {
+            if (product != null) {
+
                 product.setChecked(isChecked); // Update the local object state using setter method
                 // Update the 'isChecked' field in Firebase
-                repository.ChangeProductBox(product, position, keyPrefix);
+                if (!product.name.contains("שמירות"))
+                {
+                    repository.ChangeProductBox(product, position, keyPrefix);
+                }
             }
 
             // Apply or remove strike-through if enabled
