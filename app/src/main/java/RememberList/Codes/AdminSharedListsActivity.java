@@ -47,17 +47,18 @@ public class AdminSharedListsActivity extends AppCompatActivity implements View.
         });
 
         // Observe lists data
-        viewModel.getListsLiveData().observe(this, lists -> {
+        viewModel.getListsLiveData().observe(this, lists -> { // Observe LiveData from the ViewModel
             if (lists != null)
             {
                 positionMap = new HashMap<>();
                 originalList = new ArrayList<>(lists);
-                Collections.sort(lists, (a, b) -> Integer.compare(b.getSaves(), a.getSaves())); // Sort by saves
+                Collections.sort(lists, (a, b) -> Integer.compare(b.getSaves(), a.getSaves())); //  // Sort the list in descending order based on the number of saves
                 ArrayList<Product> adapterList = new ArrayList<>();
                 for (ListSharedObject list: lists)
                 {
-                    adapterList.add(new Product(list.toString(), false));
+                    adapterList.add(new Product(list.toString(), false)); // Convert each list object to a Product and add it to the adapter list
                 }
+                 // Initialize the adapter with the sorted list
                 adapter = new ListProductsAdapter(this, "SharedLists/", adapterList, false);
                 // Store new indexes as keys and original indexes as values
                 for (int newIndex = 0; newIndex < lists.size(); newIndex++)
