@@ -119,6 +119,7 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
             if(isAdmin)
             {
                 intent.putExtra("IS_ADMIN", true); // Sending boolean extra
+                intent.putExtra("LIST_COUNT", listsCount); // Sending boolean extra
             }
             startActivity(intent);
         }
