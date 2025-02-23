@@ -134,9 +134,12 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
         builder.setTitle("Save List");
 
         builder.setItems(new CharSequence[]{"שמור בשם המקורי", "שמור בשם חדש", "בטל"}, (dialog, which) -> {
-            if (which == 0) {
+            if (which == 0)
+            {
                 saveListWithOriginalName();
-            } else if (which == 1) {
+            }
+            else if (which == 1)
+            {
                 showNewNameInputDialog();
             }
             dialog.dismiss();
@@ -150,6 +153,7 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
     {
         Toast.makeText(this, "שומר בשם המקורי...", Toast.LENGTH_SHORT).show();
         viewModel.saveListToUser(listName,listName+listsCount, valuesList);
+        listsCount = String.valueOf(Integer.valueOf(listsCount)+1);
     }
 
 
@@ -169,6 +173,7 @@ public class SharedListsProductsActivity extends AppCompatActivity implements Vi
             {
                 Toast.makeText(this, "שומר בשם: " + newName, Toast.LENGTH_SHORT).show();
                 viewModel.saveListToUser(newName,newName+listsCount, valuesList);
+                listsCount = String.valueOf(Integer.valueOf(listsCount)+1);
             }
             else
             {
