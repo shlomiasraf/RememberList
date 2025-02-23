@@ -313,7 +313,12 @@ public class Repository {
                 for (DataSnapshot child : snapshot.getChildren())
                 {
                     String listStr = child.child("Name").getValue(String.class);
-                    int listSaveCount = child.child("listSaveCount").getValue(Integer.class);
+                    List<String> userSaves = child.child("savedUsers").getValue(new GenericTypeIndicator<List<String>>() {});
+                    int listSaveCount = userSaves.size();
+                    if(listSaveCount == 1 && userSaves.get(0).equals(""))
+                    {
+                        listSaveCount = 0;
+                    }
                     List<String> listCategoriesList = child.child("Categories").getValue(new GenericTypeIndicator<List<String>>() {});
                     String[] listCategories = listCategoriesList != null ? listCategoriesList.toArray(new String[0]) : new String[0];
                     if (listStr != null)
@@ -463,14 +468,16 @@ public class Repository {
                 {
                     long count = snapshot.getChildrenCount();
                     // Next index = count + 1 (assuming keys start at 1)
-                    Map<String, Object> valueWithBoolean = new HashMap<>();
-                    valueWithBoolean.put("Categories",categories);
+                    Map<String, Object> sharedObject = new HashMap<>();
+                    sharedObject.put("Categories",categories);
                     String userEmail = mAuth.getCurrentUser().getEmail();
                     String emailNode = userEmail.replace(".", "_");
-                    valueWithBoolean.put("CreatedBy", emailNode);
-                    valueWithBoolean.put("Name",listName);
-                    valueWithBoolean.put("listSaveCount",0);
-                    getListsRef.child(String.valueOf(count)).setValue(valueWithBoolean)
+                    sharedObject.put("CreatedBy", emailNode);
+                    sharedObject.put("Name",listName);
+                    ArrayList<String> listSaves = new ArrayList<>();
+                    listSaves.add("");
+                    sharedObject.put("savedUsers", listSaves);
+                    getListsRef.child(String.valueOf(count)).setValue(sharedObject)
                             .addOnSuccessListener(unused -> {
                                 // Set loading state to false after the operation is successful
                                 loadingLiveData.setValue(false);
@@ -884,7 +891,12 @@ public class Repository {
                             if (containsCategories)
                             {
                                 String listName = child.child("Name").getValue(String.class);
-                                int listSaveCount = child.child("listSaveCount").getValue(Integer.class);
+                                List<String> userSaves = child.child("savedUsers").getValue(new GenericTypeIndicator<List<String>>() {});
+                                int listSaveCount = userSaves.size();
+                                if(listSaveCount == 1 && userSaves.get(0).equals(""))
+                                {
+                                    listSaveCount = 0;
+                                }
                                 List<String> listCategoriesList = child.child("Categories").getValue(new GenericTypeIndicator<List<String>>() {
                                 });
                                 String[] listCategories = listCategoriesList != null ? listCategoriesList.toArray(new String[0]) : new String[0];
@@ -912,29 +924,34 @@ public class Repository {
             loadingLiveData.setValue(true);
 
             // Get reference to "listSaveCount"
-            DatabaseReference savesReference = getSharedListsRef().child(key).child("listSaveCount");
-
+            DatabaseReference savesReference = getSharedListsRef().child(key).child("savedUsers");
             // Read the current value asynchronously
             savesReference.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
-                public void onDataChange(DataSnapshot snapshot) {
-                    Integer listSaveCount = snapshot.getValue(Integer.class);
-
-                    if (listSaveCount == null) {
-                        listSaveCount = 0; // Default to 0 if no value exists
+                public void onDataChange(DataSnapshot snapshot)
+                {
+                    List<String> userSaves = snapshot.getValue(new GenericTypeIndicator<List<String>>() {});
+                    int listSaveCount = userSaves.size();
+                    if(listSaveCount == 1 && userSaves.get(0).equals(""))
+                    {
+                        listSaveCount = 0;
                     }
-
-                    // Increment the count and update the database
-                    savesReference.setValue(listSaveCount + 1)
-                            .addOnSuccessListener(aVoid -> {
-                                // Successfully updated the value
-                                loadingLiveData.setValue(false);
-                            })
-                            .addOnFailureListener(e -> {
-                                // Handle failure
-                                errorLiveData.setValue("Failed to update value: " + e.getMessage());
-                                loadingLiveData.setValue(false);
-                            });
+                    String userEmail = mAuth.getCurrentUser().getEmail();
+                    String emailNode = userEmail.replace(".", "_");
+                    if(!userSaves.contains(emailNode))
+                    {
+                        // Increment the count and update the database
+                        savesReference.child(String.valueOf(listSaveCount)).setValue(emailNode)
+                                .addOnSuccessListener(aVoid -> {
+                                    // Successfully updated the value
+                                    loadingLiveData.setValue(false);
+                                })
+                                .addOnFailureListener(e -> {
+                                    // Handle failure
+                                    errorLiveData.setValue("Failed to update value: " + e.getMessage());
+                                    loadingLiveData.setValue(false);
+                                });
+                    }
                 }
 
                 @Override
@@ -1049,14 +1066,14 @@ public class Repository {
                         else
                         {
                             String userName = snapshot.child(String.valueOf(i)).child("CreatedBy").getValue(String.class);
-                            int saves = snapshot.child(String.valueOf(i)).child("listSaveCount").getValue(Integer.class);
+                            List<String> userSaves = snapshot.child(String.valueOf(i)).child("savedUsers").getValue(new GenericTypeIndicator<List<String>>() {});
                             List<String> categories = snapshot.child(String.valueOf(i)).child("Categories").getValue(new GenericTypeIndicator<List<String>>() {});
                             // Create a map to store the values
                             Map<String, Object> sharedObject = new HashMap<>();
                             sharedObject.put("Categories", categories);
                             sharedObject.put("CreatedBy", userName);
                             sharedObject.put("Name", listName);
-                            sharedObject.put("listSaveCount", saves);
+                            sharedObject.put("savedUsers", userSaves);
 
                             // Move the current value to fill the gap
                             sharedListsRef.child(String.valueOf(i - counter)).setValue(sharedObject);
