@@ -21,6 +21,7 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Activity for managing the products within a specific list.
@@ -188,7 +189,13 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
 
         builder.setPositiveButton("אישור", (dialog, which) -> {
             String category = categoryInput.getText().toString().trim();
-            if (!category.isEmpty()) {
+
+            if (category.isEmpty()) {
+                Toast.makeText(this, "נא להזין קטגוריה", Toast.LENGTH_SHORT).show();
+            } else if (Collections.frequency(categories, category) >= 1) {
+                // Prevent duplicate categories
+                Toast.makeText(this, "קטגוריה זו כבר קיימת", Toast.LENGTH_SHORT).show();
+            } else {
                 categories.add(category);
 
                 if (categories.size() < 3) {
@@ -196,9 +203,6 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
                 } else {
                     shareList(categories); // Max reached, proceed with sharing
                 }
-            } else
-            {
-                Toast.makeText(this, "נא להזין קטגוריה", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -211,6 +215,7 @@ public class ListProductsActivity extends AppCompatActivity implements View.OnCl
 
         builder.create().show();
     }
+
 
 
     private void askToAddAnotherCategory() {
