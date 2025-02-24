@@ -59,11 +59,14 @@ public class ListSharedObject
     @Override
     public String toString()
     {
+        // Start with the list name followed by a comma and space.
         String toString = listName + ", ";
+         // Append each category to the string, separated by a comma and space.
         for(String category : categories)
         {
             toString += category + ", ";
         }
+        // Append the word "שמירות" (meaning "saves" in Hebrew) and the number of saves.
         toString += "שמירות " + String.valueOf(saves);
         return toString;
     }
