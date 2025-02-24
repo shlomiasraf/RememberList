@@ -17,17 +17,33 @@ public class AdminSharedListsViewModel extends AndroidViewModel {
 
     public AdminSharedListsViewModel(@NonNull Application application) {
         super(application);
+        // Initialize the repository with the application context.
         repository = new Repository(application);
     }
-
+    
+     /**
+     * Returns the LiveData containing the list of shared lists.
+     *
+     * @return LiveData of ListSharedObject list.
+     */
     public LiveData<List<ListSharedObject>> getListsLiveData() {
         return listsLiveData;
     }
-
+    
+    /**
+     * Returns the LiveData indicating the loading status.
+     *
+     * @return LiveData of a Boolean indicating loading status.
+     */
     public LiveData<Boolean> getLoadingLiveData() {
         return loadingLiveData;
     }
-
+    
+    /**
+     * Returns the LiveData containing error messages.
+     *
+     * @return LiveData of a String representing error messages.
+     */
     public LiveData<String> getErrorLiveData() {
         return errorLiveData;
     }
