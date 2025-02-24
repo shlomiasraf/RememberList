@@ -140,17 +140,17 @@ public class LoginActivity extends AppCompatActivity
     private void showAdminLoginDialog()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("סוג התחברות");
-        builder.setMessage("האם תרצה להתחבר כמנהל ולנהל רשימות משותפות או להתחבר כרגיל?");
+        builder.setTitle("התחברת כמנהל!");
+        builder.setMessage("האם תרצה לעבור למסך הרשימות שלי או למסך הניהול?");
 
-        builder.setPositiveButton("כמנהל", (dialog, which) -> {
+        builder.setPositiveButton("מסך ניהול", (dialog, which) -> {
             // Proceed with admin login
             Intent intent = new Intent(LoginActivity.this, AdminSharedListsActivity.class); // Create an intent for the main screen
             startActivity(intent); // Start the main screen activity
             finish(); // Close the current activity
         });
 
-        builder.setNegativeButton("התחברות רגילה", (dialog, which) ->
+        builder.setNegativeButton("רשימות שלי", (dialog, which) ->
         {
             // Proceed with regular login
             Intent intent = new Intent(LoginActivity.this, MyListsActivity.class); // Create an intent for the main screen
