@@ -47,13 +47,19 @@ public class Repository {
                                MutableLiveData<FirebaseUser> userLiveData,
                                MutableLiveData<String> errorLiveData,
                                MutableLiveData<Boolean> loadingLiveData) {
+         // Set loading indicator to true before starting the login process.
         loadingLiveData.setValue(true);
+        // Attempt to sign in using Firebase Authentication with the provided email and password.
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
+                     // After the task completes, disable the loading indicator.
                     loadingLiveData.setValue(false);
+                    // Check if the sign-in was successful.
                     if (task.isSuccessful()) {
+                        // If successful, update userLiveData with the current authenticated user.
                         userLiveData.setValue(mAuth.getCurrentUser());
                     } else {
+                        // If sign-in fails, update errorLiveData with the error message.
                         errorLiveData.setValue("Login failed: " + task.getException().getMessage());
                     }
                 });
@@ -72,13 +78,19 @@ public class Repository {
                                   MutableLiveData<FirebaseUser> userLiveData,
                                   MutableLiveData<String> errorLiveData,
                                   MutableLiveData<Boolean> loadingLiveData) {
+        // Set loading indicator to true before starting the registration process.
         loadingLiveData.setValue(true);
+        // Attempt to create a new user with the provided email and password using Firebase Authentication.
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
+                     // Disable the loading indicator once the registration task is complete.
                     loadingLiveData.setValue(false);
+                    // Check if the registration was successful.
                     if (task.isSuccessful()) {
+                         // If registration is successful, update userLiveData with the new FirebaseUser.
                         userLiveData.setValue(mAuth.getCurrentUser());
                     } else {
+                        // If registration fails, update errorLiveData with the error message.
                         errorLiveData.setValue("Registration failed: " + task.getException().getMessage());
                     }
                 });
@@ -96,14 +108,20 @@ public class Repository {
                                 MutableLiveData<FirebaseUser> userLiveData,
                                 MutableLiveData<String> errorLiveData,
                                 MutableLiveData<Boolean> loadingLiveData) {
+         // Set loading indicator to true to show that the login process has started.
         loadingLiveData.setValue(true);
+        // Get the credentials from the GoogleSignInAccount's ID token.
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+        // Sign in with the obtained credential using Firebase Authentication.
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(task -> {
+                    // Once the sign-in task is complete, disable the loading indicator.
                     loadingLiveData.setValue(false);
+                    // If the sign-in was successful, update userLiveData with the current FirebaseUser.
                     if (task.isSuccessful()) {
                         userLiveData.setValue(mAuth.getCurrentUser());
                     } else {
+                         // If sign-in fails, update errorLiveData with the error message.
                         errorLiveData.setValue("Google login failed: " + task.getException().getMessage());
                     }
                 });
@@ -154,7 +172,9 @@ public class Repository {
 
                 @Override
                 public void onCancelled(DatabaseError error) {
+                    // Disable the loading indicator as the operation is now finished (even though it failed).
                     loadingLiveData.setValue(false);
+                    // Update the errorLiveData with a descriptive error message containing the error details.
                     errorLiveData.setValue("Failed to load user data: " + error.getMessage());
                 }
             });
@@ -232,35 +252,57 @@ public class Repository {
      */
     public void InitialCategories()
     {
+        // Create the default category with key "0" and value "כל הקטגוריות" (All categories).
         getCategoriesRef().child(String.valueOf(0)).setValue("כל הקטגוריות");
+        // Create a category with key "1" and value "טיולים" (Trips).
         getCategoriesRef().child(String.valueOf(1)).setValue("טיולים");
+        // Create a category with key "2" and value "קניות" (Shopping).
         getCategoriesRef().child(String.valueOf(2)).setValue("קניות");
+        // Create a category with key "3" and value "אירועים מיוחדים" (Special events).
         getCategoriesRef().child(String.valueOf(3)).setValue("אירועים מיוחדים");
     }
+
+ /**
+ * Retrieves the categories from the database and posts them to the provided LiveData objects.
+ *
+ * @param CategoriesLiveData LiveData to post the list of categories.
+ * @param loadingLiveData LiveData to indicate the loading status.
+ * @param errorLiveData LiveData to post error messages.
+ */
     public void getCategories(final MutableLiveData<List<String>> CategoriesLiveData,
                               final MutableLiveData<Boolean> loadingLiveData,
                               final MutableLiveData<String> errorLiveData) {
+        // Set loading indicator to true to show that data retrieval has started.
         loadingLiveData.setValue(true);
+        // Attach a single event listener to fetch the categories from the database.
         getCategoriesRef().addListenerForSingleValueEvent(new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
+                // Initialize a list to hold the retrieved category names.
                 List<String> Categories = new ArrayList<>();
+                 // Iterate through each child node (each category) in the snapshot.
                 for (DataSnapshot child : snapshot.getChildren()) {
+                    // Retrieve the value of the category as a String.
                     String CategoryStr = child.getValue(String.class);
+                    // If the category value is not null, add it to the list.
                     if (CategoryStr != null)
                     {
                         Categories.add(CategoryStr);
                     }
                 }
+                // Post the list of categories to the LiveData.
                 CategoriesLiveData.setValue(Categories);
+                 // Set loading indicator to false as data retrieval is complete.
                 loadingLiveData.setValue(false);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError)
             {
+                // In case of an error, set loading indicator to false.
                 loadingLiveData.setValue(false);
+                // Post an error message with the details from the DatabaseError.
                 errorLiveData.setValue("Failed to fetch content: " + databaseError.getMessage());
             }
         });
@@ -274,66 +316,93 @@ public class Repository {
                          final MutableLiveData<Boolean> loadingLiveData,
                          final MutableLiveData<String> errorLiveData)
     {
+        // Set the loading indicator to true as the retrieval process starts.
         loadingLiveData.setValue(true);
+        // Get the DatabaseReference for the user's lists.
         DatabaseReference getListsRef = getListsRef();
+        // Attach a single event listener to fetch the data from Firebase.
         getListsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot)
             {
+                // Initialize a list to store the retrieved lists.
                 List<String> lists = new ArrayList<>();
+                // Iterate over each child snapshot, which represents an individual list.
                 for (DataSnapshot child : snapshot.getChildren())
                 {
+                    // Convert the snapshot's value to a String.
                     String listStr = child.getValue(String.class);
+                    // If the list string is not null, add it to the list.
                     if (listStr != null)
                     {
                         lists.add(listStr);
                     }
                 }
+                 // Post the retrieved lists to the provided LiveData.
                 listsLiveData.setValue(lists);
+                // Disable the loading indicator as data retrieval is complete.
                 loadingLiveData.setValue(false);
             }
             @Override
             public void onCancelled(DatabaseError databaseError)
             {
+                // Disable the loading indicator since the operation has ended.
                 loadingLiveData.setValue(false);
+                // Post an error message with details about the failure.
                 errorLiveData.setValue("Failed to fetch content: " + databaseError.getMessage());
             }
         });
     }
     public void getSharedLists(final MutableLiveData<List<ListSharedObject>> listsLiveData, final MutableLiveData<Boolean> loadingLiveData, final MutableLiveData<String> errorLiveData)
     {
+        // Set the loading indicator to true as we start fetching shared lists.
         loadingLiveData.setValue(true);
+        // Get the DatabaseReference for the shared lists.
         DatabaseReference getListsRef = getSharedListsRef();
+         // Attach a listener to retrieve the shared lists data as a single event.
         getListsRef.addListenerForSingleValueEvent(new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot snapshot)
             {
+                // Initialize a list to hold the ListSharedObject items.
                 List<ListSharedObject> lists = new ArrayList<>();
+                // Iterate over each child node under the shared lists.
                 for (DataSnapshot child : snapshot.getChildren())
                 {
+                    // Retrieve the list's name from the "Name" child node.
                     String listStr = child.child("Name").getValue(String.class);
+                    // Retrieve the list of users who have saved the list.
                     List<String> userSaves = child.child("savedUsers").getValue(new GenericTypeIndicator<List<String>>() {});
+                    // Get the count of saved users.
                     int listSaveCount = userSaves.size();
+                    // If there is only one entry and it's an empty string, treat the count as zero.
                     if(listSaveCount == 1 && userSaves.get(0).equals(""))
                     {
                         listSaveCount = 0;
                     }
+                    // Retrieve the list of categories associated with the list.
                     List<String> listCategoriesList = child.child("Categories").getValue(new GenericTypeIndicator<List<String>>() {});
+                    // Convert the list of categories to an array.
                     String[] listCategories = listCategoriesList != null ? listCategoriesList.toArray(new String[0]) : new String[0];
+                    // If the list name is not null, create a new ListSharedObject and add it to the list.
                     if (listStr != null)
                     {
                         lists.add(new ListSharedObject(listSaveCount, listStr, listCategories));
                     }
                 }
+                // Post the retrieved shared lists to the provided LiveData.
                 listsLiveData.setValue(lists);
+                // Disable the loading indicator as data retrieval is complete.
                 loadingLiveData.setValue(false);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError)
             {
+                // Disable the loading indicator since the operation has ended.
                 loadingLiveData.setValue(false);
+                // Post an error message with details about the failure.
                 errorLiveData.setValue("Failed to fetch content: " + databaseError.getMessage());
             }
         });
@@ -349,37 +418,47 @@ public class Repository {
                           final MutableLiveData<List<Product>> valuesLiveData,
                           final MutableLiveData<Boolean> loadingLiveData,
                           final MutableLiveData<String> errorLiveData) {
+        // Set the loading indicator to true at the start of data retrieval.
         loadingLiveData.setValue(true);
+        // Determine the correct DatabaseReference based on the type of values.
         DatabaseReference getValuesRef;
         if(valuesKind.equals("SharedValues"))
         {
+             // Use the shared values reference if valuesKind equals "SharedValues".
             getValuesRef = getSharedValuesRef();
         }
         else
         {
+            // Otherwise, use the user-specific values reference.
             getValuesRef = getValuesRef();
         }
-
+        // Attach a listener to retrieve the values for the given keyPrefix.
         getValuesRef.child(keyPrefix).addListenerForSingleValueEvent(new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot snapshot)
             {
+                // Create a list to hold the retrieved Product objects.
                 List<Product> values = new ArrayList<>();
                 // Iterate over each child in the node
                 for (DataSnapshot child : snapshot.getChildren())
                 {
                     String value;
+                    // Default isChecked to false.
                     Boolean isChecked = false;
                     if(valuesKind.equals("UserValues"))
                     {
+                        // If using user-specific values, retrieve both "isChecked" and "value" fields.
                         isChecked = child.child("isChecked").getValue(Boolean.class);
+                        
                         value = child.child("value").getValue(String.class);
                     }
                     else
                     {
+                        // For shared values, only retrieve the value.
                         value = child.getValue(String.class);
                     }
+                    // Only add the product if the value is not null and isChecked is available.
                     if (value != null && isChecked != null)
                     {
                         values.add(new Product(value, isChecked));
@@ -387,6 +466,7 @@ public class Repository {
                 }
                 // Update the LiveData with the fetched values
                 valuesLiveData.setValue(values);
+                // Disable the loading indicator as the operation has completed.
                 loadingLiveData.setValue(false);
             }
 
@@ -861,45 +941,64 @@ public class Repository {
                                  MutableLiveData<List<ListSharedObject>> listsLiveData,
                                  MutableLiveData<String> errorLiveData)
     {
+        // Start by setting the loading indicator to true.
         loadingLiveData.setValue(true);
-
+        // Retrieve the shared lists from Firebase.
         getSharedListsRef().addListenerForSingleValueEvent(new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot snapshot)
             {
+                // Initialize a list to store the filtered ListSharedObject items.
                 List<ListSharedObject> lists = new ArrayList<>();
-
+                // Check if the snapshot contains data.
                 if (snapshot.exists())
                 {
+                    // Iterate through each shared list node.
                     for (DataSnapshot child : snapshot.getChildren())
                     {
+                        // Retrieve the list of categories for the current list.
                         GenericTypeIndicator<List<String>> t = new GenericTypeIndicator<List<String>>() {};
                         List<String> categoriesOfList = child.child("Categories").getValue(t);
+                        // If no categories are found, initialize an empty list.
                         if (categoriesOfList == null)
                         {
                             categoriesOfList = new ArrayList<>();
                         }
+                        // If filteredCategories is not null, perform filtering.
                         if (filteredCategories != null) {
+                            // Assume the current list contains all filtered categories.
                             Boolean containsCategories = true;
+                            // Check each category in the filtered list.
                             for (String category : filteredCategories) {
+                                // If the current list's categories do not contain this category
+                            // and the category is not "כל הקטגוריות" (meaning "All categories"),
+                            // mark it as not containing all required categories.
                                 if (!categoriesOfList.contains(category) && !category.equals("כל הקטגוריות")) {
                                     containsCategories = false;
                                     break;
                                 }
                             }
+                            // If the list contains all the required filtered categories.
                             if (containsCategories)
                             {
+                                // Retrieve the list's name.
                                 String listName = child.child("Name").getValue(String.class);
+                                 // Retrieve the list of users who have saved this list.
                                 List<String> userSaves = child.child("savedUsers").getValue(new GenericTypeIndicator<List<String>>() {});
+                                // Calculate the number of users who saved the list.
                                 int listSaveCount = userSaves.size();
+                                // If there's only one entry and it is an empty string, treat it as zero.
                                 if(listSaveCount == 1 && userSaves.get(0).equals(""))
                                 {
                                     listSaveCount = 0;
                                 }
+                                // Retrieve the categories associated with the list.
                                 List<String> listCategoriesList = child.child("Categories").getValue(new GenericTypeIndicator<List<String>>() {
                                 });
+                                // Convert the list of categories to an array.
                                 String[] listCategories = listCategoriesList != null ? listCategoriesList.toArray(new String[0]) : new String[0];
+                                // If the list name is not null, create a new ListSharedObject and add it to the list.
                                 if (listName != null) {
                                     lists.add(new ListSharedObject(listSaveCount, listName, listCategories));
                                 }
@@ -907,13 +1006,17 @@ public class Repository {
                         }
                     }
                 }
+                // Post the filtered lists to the LiveData.
                 listsLiveData.setValue(lists);
+                // Stop the loading indicator.
                 loadingLiveData.setValue(false);
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
+                // In case of an error, post the error message.
                 errorLiveData.setValue("Failed to fetch lists categories: " + error.getMessage());
+                // Stop the loading indicator.
                 loadingLiveData.setValue(false);
             }
         });
@@ -1124,34 +1227,50 @@ public class Repository {
         });
     }
 
+    // Returns a DatabaseReference to the "lists" node for the current user.
     public DatabaseReference getListsRef()
     {
+          // Get the current user's email.
         String userEmail = mAuth.getCurrentUser().getEmail();
+         // Replace any '.' in the email with '_' to make it a valid key for Firebase.
         String emailNode = userEmail.replace(".", "_");
+        // Navigate to the user's lists under the "UsersDatabase" node.
         DatabaseReference listsRef = databaseReference.child("UsersDatabase").child(emailNode).child("lists");
         return listsRef;
     }
+    // Returns a DatabaseReference to the "values" node for the current user.
     public DatabaseReference getValuesRef()
     {
+        // Get the current user's email.
         String userEmail = mAuth.getCurrentUser().getEmail();
+        // Replace any '.' in the email with '_' for Firebase compatibility.
         String emailNode = userEmail.replace(".", "_");
+        // Navigate to the user's values under the "UsersDatabase" node.
         DatabaseReference valuesRef = databaseReference.child("UsersDatabase").child(emailNode).child("values");
         return valuesRef;
     }
+    // Returns a DatabaseReference to the "Categories" node for the current user.
     public DatabaseReference getCategoriesRef()
     {
+        // Get the current user's email.
         String userEmail = mAuth.getCurrentUser().getEmail();
+         // Replace any '.' in the email with '_' to ensure valid Firebase key formatting.
         String emailNode = userEmail.replace(".", "_");
+         // Navigate to the user's categories under the "UsersDatabase" node.
         DatabaseReference CategoriesRef = databaseReference.child("UsersDatabase").child(emailNode).child("Categories");
         return CategoriesRef;
     }
+    // Returns a DatabaseReference to the shared "lists" node.
     public DatabaseReference getSharedListsRef()
     {
+          // Navigate directly to the "lists" node under "SharedLists".
         DatabaseReference SharedListsRef = databaseReference.child("SharedLists").child("lists");
         return SharedListsRef;
     }
+    // Returns a DatabaseReference to the shared "values" node.
     public DatabaseReference getSharedValuesRef()
     {
+        // Navigate directly to the "values" node under "SharedLists".
         DatabaseReference SharedValuesRef = databaseReference.child("SharedLists").child("values");
         return SharedValuesRef;
     }
