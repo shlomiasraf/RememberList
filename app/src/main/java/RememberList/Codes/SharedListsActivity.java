@@ -195,13 +195,19 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
 
     public void showCategoryDialog()
     {
+        // Flag to confirm dialog action, stored as an array to allow modification inside inner classes.
         final boolean[] isConfirmed = {false};
+         // Observe the categories LiveData from the view model.
         viewModel.getCategoriesLiveData().observe(this, categories ->
         {
+            // Remove the observer after receiving the data to prevent further updates.
             viewModel.getCategoriesLiveData().removeObservers(this);
+            // Check if the retrieved categories are not null.
             if (categories != null)
             {
+                // Create a boolean array for tracking which categories are checked.
                 boolean[] checkedItems = new boolean[categories.size()];
+                // Clean up the categories list if it contains an empty string entry.
                 if(categories.size() == 1 && categories.get(0).equals(""))
                 {
                     categories.clear();
@@ -210,24 +216,32 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
                 {
                     categories.remove(0);
                 }
+                // Convert the categories list to an array for use in the AlertDialog.
                 String[] categoryArray = categories.toArray(new String[0]);
+                 // Build the AlertDialog for selecting categories.
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                // Set the title of the dialog (in Hebrew: "בחר קטגוריות" means "Choose Categories").
                 builder.setTitle("בחר קטגוריות");
+                // Set multi-choice items in the dialog.
                 builder.setMultiChoiceItems(categoryArray, checkedItems, (dialog, which, isChecked) ->
                 {
                     if (isChecked)
                     {
+                        // Initialize the selectedCategories list and indexes if they haven't been already.
                         if (selectedCategories == null)
                         {
                             selectedCategories = new ArrayList<>();
                             indexes = new ArrayList<>();
                         }
+                        // If the category isn't already in the selected list, add it along with its index.
                         if (!selectedCategories.contains(categoryArray[which]))
                         {
                             selectedCategories.add(categoryArray[which]);
                             indexes.add(which);
                         }
+                        // Create a new list to hold the updated selection.
                         List<String> updatedSelection = new ArrayList<>();
+                         // Clear indexes and update selections based on the current checkedItems state.
                         indexes.clear();
                         for (int i = 0; i < categoryArray.length; i++)
                         {
@@ -237,11 +251,13 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
                                 indexes.add(i);
                             }
                         }
+                        // Clear the current selectedCategories and update it with the new selection.
                         selectedCategories.clear();
                         selectedCategories.addAll(updatedSelection);
                     }
                     else
                     {
+                         // If an item is unchecked, remove it from the selectedCategories list.
                         if (selectedCategories != null)
                         {
                             selectedCategories.remove(categoryArray[which]);
@@ -312,29 +328,39 @@ public class SharedListsActivity extends AppCompatActivity implements View.OnCli
 
     public void showAddCategoryDialog(List<String> categories, AlertDialog parentDialog)
     {
+        // Create a builder for the add category dialog.
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Set the title of the dialog (in Hebrew: "הוסף קטגוריה" means "Add Category").
         builder.setTitle("הוסף קטגוריה");
-
+        // Create an EditText for user input.
         final EditText input = new EditText(this);
         input.setHint("הכנס שם");
+        // Attach the EditText to the dialog.
         builder.setView(input);
-
+        // Set up the positive button with text "הוסף".
         builder.setPositiveButton("הוסף", (dialog, which) ->
         {
+            // Get the trimmed input text.
             String categoryName = input.getText().toString().trim();
+            // Check that the category name is not empty and doesn't already exist in the categories list.
             if (!categoryName.isEmpty() && !categories.contains(categoryName))
             {
+                // Add the new category through the ViewModel.
                 viewModel.addCategory(categoryName);
+                // Show a success toast message.
                 Toast.makeText(this, "הקטגוריה נוספה בהצלחה", Toast.LENGTH_SHORT).show();
                 parentDialog.dismiss(); // Refresh parent dialog
                 showCategoryDialog();
             }
             else
             {
+                // Show an error toast if the category already exists or the name is empty.
                 Toast.makeText(this, "הקטגוריה כבר קיימת או שהשם ריק", Toast.LENGTH_SHORT).show();
             }
         });
+        // Set up the negative button with text "ביטול".
         builder.setNegativeButton("ביטול", (dialog, which) -> dialog.dismiss());
+        // Finally, display the add category dialog.
         builder.show();
     }
 
