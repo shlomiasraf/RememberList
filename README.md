@@ -12,5 +12,6 @@
  * Android Studio
  * Firebase Realtime Database
  * MVVM Architecture
+
    מצורפים כל הקבצים המסבירים על האפליקציה בתיקיית:
    app docs.
